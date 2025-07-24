@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://droomdroom.com/bitcoin-treasury-tracker/sitemap.xml 
+
