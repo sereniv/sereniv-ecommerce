@@ -1,7 +1,6 @@
 import "./globals.css"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Toaster } from "@/components/toaster"
@@ -92,12 +91,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
         document.head.appendChild(clickRankAi);
       </script>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
           <OrganizationSchema
             name="DroomDroom"
             url={"https://droomdroom.com/bitcoin-treasury-tracker"}
@@ -108,7 +101,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
             {children}
           </div>
           <Toaster />
-        </ThemeProvider>
       </body>
     </html>
   )
