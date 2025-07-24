@@ -5,8 +5,6 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Container, Flex } from "./ui";
 import { FadeIn } from "./ui/animation";
-import MarqueeScroll from "./marquee-scroll";
-import { CustomLink } from "./custom-link";
 import axios from "axios";
 import { cn } from "@/lib/utils";
 
@@ -196,8 +194,6 @@ export default function Header() {
             </nav>
           </Container>
         </div>
-
-        <MarqueeScroll />
       </div>
     </header>
   );

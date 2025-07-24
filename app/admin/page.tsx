@@ -2,10 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Building, Shield, Users, Database, Loader2 } from 'lucide-react'
+import { Building, Shield, Users, Database, Loader2, Link } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CustomLink } from '@/components/custom-link'
+
 
 function AdminPageSkeleton() {
   return (
@@ -197,9 +197,9 @@ export default function AdminPage() {
                       asChild 
                       className="w-full h-12 text-base font-medium bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 border-0 shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105"
                     >
-                      <CustomLink href={card.href}>
+                      <Link href={card.href}>
                         Access {card.title}
-                      </CustomLink>
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>

@@ -17,11 +17,11 @@ import {
   Search,
   Pencil,
   Plus,
+  Link,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 import { Shimmer } from "@/components/ui/shimmer"
 import { getApiUrl, formatNumberWithSuffix } from "@/lib/utils"
-import { CustomLink } from "@/components/custom-link"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -221,10 +221,10 @@ return (
 
               <div>
                 <Button variant="outline" size="sm" asChild className="border-border/50 bg-background/50 backdrop-blur-sm hover:bg-accent/50 hover:border-orange-500/50 hover:shadow-md transition-all duration-300 group/button">
-                  <CustomLink href="/admin/add-entity" className="flex items-center gap-2">
+                  <Link href="/admin/add-entity" className="flex items-center gap-2">
                     <Plus className="h-3 w-3 group-hover/button:text-orange-600 dark:group-hover/button:text-orange-400 transition-colors duration-300" />
                     <span className="text-base py-2  font-medium group-hover/button:text-orange-600 dark:group-hover/button:text-orange-400 transition-colors duration-300">Add Entity</span>
-                  </CustomLink>
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -321,7 +321,7 @@ return (
                         </TableCell>
 
                         <TableCell className="py-3 sm:py-4 px-2 sm:px-4 text-left">
-                          <CustomLink href={`/admin/edit-entity/${entity.slug}`} className="group/link flex items-center gap-1 sm:gap-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-300">
+                          <Link href={`/admin/edit-entity/${entity.slug}`} className="group/link flex items-center gap-1 sm:gap-2 hover:text-orange-600 dark:hover:text-orange-400 transition-colors duration-300">
                             <span className="text-sm sm:text-base flex-shrink-0">{entity.countryFlag}</span>
                             <div className="space-y-1 min-w-0 flex-1">
                               <div className="font-semibold text-xs sm:text-sm text-foreground group-hover/link:text-orange-600 dark:group-hover/link:text-orange-400 transition-colors truncate">
@@ -333,7 +333,7 @@ return (
                                 </div>
                               )}
                             </div>
-                          </CustomLink>
+                          </Link>
                         </TableCell>
 
                         <TableCell className="py-3 sm:py-4 px-2 sm:px-4 text-left">
@@ -393,10 +393,10 @@ return (
                               asChild
                               className="border-border/50 bg-background/50 backdrop-blur-sm hover:bg-accent/50 hover:border-orange-500/50 hover:shadow-md transition-all duration-300 group/button"
                             >
-                              <CustomLink href={"/admin/edit-entity/" + entity.slug} className="flex items-center gap-2">
+                              <Link href={"/admin/edit-entity/" + entity.slug} className="flex items-center gap-2">
                                 <Pencil className="h-3 w-3 group-hover/button:text-orange-600 dark:group-hover/button:text-orange-400 transition-colors duration-300" />
                                 <span className="text-xs font-medium group-hover/button:text-orange-600 dark:group-hover/button:text-orange-400 transition-colors duration-300">Edit</span>
-                              </CustomLink>
+                              </Link>
                             </Button>
                           </div>
                         </TableCell>

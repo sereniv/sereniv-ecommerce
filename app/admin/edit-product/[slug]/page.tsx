@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 import { FormShimmer } from "@/components/ui/shimmer"
 import { useToast } from "@/components/ui/use-toast"
 import { getApiUrl } from "@/lib/utils";
-import EditEntityForm from "@/components/edit-entity-form"
 import { Entity } from "@/lib/types/entity"
 import { Card, CardContent } from "@/components/ui/card"
 
@@ -87,36 +86,8 @@ export default function EditEntityPage() {
             </CardContent>
           </Card>
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {loading ? (
-              <div className="col-span-full">
-                <Card className="border-0 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-xl border border-orange-200/50 dark:border-orange-800/50">
-                  <CardContent className="p-8">
-                    <FormShimmer />
-                  </CardContent>
-                </Card>
-              </div>
-            ) : entity ? (
-              <EditEntityForm initialData={entity} slug={slug} toast={toast} />
-            ) : (
-              <div className="col-span-full">
-                <Card className="border-0 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-sm shadow-xl border border-red-200/50 dark:border-red-800/50">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/50 dark:to-red-900/30 border border-red-200 dark:border-red-800 shadow-lg min-w-[44px] min-h-[44px] flex items-center justify-center">
-                        <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-red-800 dark:text-red-400">Error Loading Entity</h3>
-                        <p className="text-red-600 dark:text-red-400">{error || "Failed to load entity data"}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+          <div>
+            Edit Product
           </div>
         </div>
       </div>

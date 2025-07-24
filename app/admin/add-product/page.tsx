@@ -2,7 +2,6 @@
 
 import { useToast } from "@/components/ui/use-toast"
 import { Card, CardContent } from "@/components/ui/card"
-import AddEntityForm from "@/components/add-product-form"
 
 
 export default function AddEntityPage() {
@@ -41,10 +40,6 @@ export default function AddEntityPage() {
               </div>
             </CardContent>
           </Card>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <AddEntityForm />
-          </div>
         </div>
       </div>
     </div>
