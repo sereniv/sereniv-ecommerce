@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import StaticEntityPage from "@/components/static-entity-page"
 import { EntitySchema } from "@/components/schema-markup"
 import type { Entity } from "@/lib/types/entity"
 
@@ -84,7 +83,7 @@ export default async function EntityPage({ params }: EntityPageProps) {
   return (
     <>
       <EntitySchema entity={data.entity} />
-      <StaticEntityPage entity={data.entity} similarEntities={data.similarEntities} />
+      <div>Product Page</div>
     </>
   );
 }
