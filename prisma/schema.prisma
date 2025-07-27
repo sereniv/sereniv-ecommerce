@@ -7,211 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum EntityType {
-  PUBLIC
-  PRIVATE
-  GOVERNMENT
-  DEFI
-  EXCHANGE
-  ETF
+enum UserRole {
+  ADMIN
+  USER
 }
 
-model Entity {
-  id                   String     @id @default(auto()) @map("_id") @db.ObjectId
-  entityId             String?
-  rank                 String?
-  slug                 String?
-  name                 String?
-  ticker               String?
-  countryFlag          String?
-  countryName          String?
-  type                 EntityType
-  marketCap            Float?
-  sharePrice           Float?
-  enterpriseValue      Float?
-  bitcoinHoldings      Float?
-  btcPerShare          Float?
-  costBasis            Float?
-  usdValue             Float?
-  ngu                  Float?
-  mNav                 Float?
-  marketCapPercentage  Float?
-  supplyPercentage     Float?
-  profitLossPercentage Float?
-  externalWebsiteSlug  String?
-  holdingSince         String?
-  avgCostPerBTC        Float?
-  bitcoinValueInUSD    Float?
-  lastUpdated          DateTime   @default(now())
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
-
-  entityHistorical EntityHistorical[]
-  entityTimeSeries EntityTimeSeries[]
-  balanceSheet     BalanceSheet[]
-  entityAbout      EntityAbout[]
-  entityLinks      EntityLink[]
-
-
-  seoTitle           String?
-  seoDescription     String?
-  seoKeywords        String[]
-  seoImage           String?
-}
-
-model EntityAbout {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  entityId  String   @db.ObjectId
-  entity    Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  title     String
-  content   String
-  headings  String[]
-  keyPoints String[]
-}
-
-model EntityHistorical {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  entityId        String   @db.ObjectId
-  entity          Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  date            DateTime
-  bitcoinHoldings Float
-  usdValue        Float
-  btcPrice        Float
-  createdAt       DateTime @default(now())
-
-  @@index([entityId, date])
-}
-
-enum TimeSeriesType {
-  BTC_BALANCE
-  BTC_PRICE
-  STOCK_PRICE
-  BTC_PER_SHARE
-  FIAT_VALUE
-  NAV_MULTIPLIER
-}
-
-model EntityTimeSeries {
-  id        String         @id @default(auto()) @map("_id") @db.ObjectId
-  entityId  String         @db.ObjectId
-  entity    Entity         @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  type      TimeSeriesType
-  timestamp BigInt
-  date      DateTime
-  value     Float
-  createdAt DateTime       @default(now())
-
-  @@index([entityId, type, timestamp])
-  @@index([entityId, type, date])
-}
-
-model TreasurySnapshot {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  date                DateTime @unique
-  totalBitcoinHeld    Float
-  totalPublicHeld     Float
-  totalPrivateHeld    Float
-  totalGovernmentHeld Float
-  totalUsdValue       Float
-  btcPrice            Float
-  createdAt           DateTime @default(now())
-}
-
-model TreasuryApiCache {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  lastFetched DateTime @default(now())
-  data        String   @db.String
-  isValid     Boolean  @default(true)
-}
-
-model BitcoinPriceHistory {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  timestamp BigInt
-  date      DateTime
-  price     Float
-  createdAt DateTime @default(now())
-
-  @@index([timestamp])
-  @@index([date])
-}
-
-model PriceApiCache {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  lastFetched DateTime  @default(now())
-  dataType    String // e.g., "daily", "hourly", "weekly"
-  startDate   DateTime?
-  endDate     DateTime?
-  data        String    @db.String
-  isValid     Boolean   @default(true)
-}
-
-enum EntityCategory {
-  PRIVATE_COMPANY
-  PUBLIC_COMPANY
-  GOVERNMENT
-  DEFI
-  EXCHANGE
-  FUND
-}
-
-model AggregateHoldings {
-  id                 String         @id @default(auto()) @map("_id") @db.ObjectId
-  timestamp          BigInt
-  date               DateTime
-  totalBitcoinHeld    Float?
-  totalPublicHeld     Float?
-  totalPrivateHeld    Float?
-  totalGovernmentHeld Float?
-  totalDefiHeld       Float?
-  totalExchangeHeld   Float?
-  totalEtfHeld        Float?
-  totalUsdValue       Float?
-  btcPrice            Float?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-
-  @@index([timestamp])
-  @@index([date])
-}
-
-model AggregateCache {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  lastFetched DateTime @default(now())
-  category    String?
-  data        String   @db.String
-  isValid     Boolean  @default(true)
-}
-
-enum LinkType {
-  OFFICIAL
-  UNOFFICIAL
-}
-
-model EntityLink {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  entityId  String   @db.ObjectId
-  entity    Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  text      String
-  url       String
-  type      LinkType @default(UNOFFICIAL)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([entityId])
-}
-
-model BalanceSheet {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  entityId    String   @db.ObjectId
-  entity      Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  date        DateTime?
-  btcBalance  Float
-  change      Float
-  costBasis   Float
-  marketPrice Float
-  stockPrice  Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([entityId, date])
+model User {
+  id                        String    @id @default(auto()) @map("_id") @db.ObjectId
+  firstName                 String
+  lastName                  String?
+  email                     String    @unique
+  password                  String
+  isVerified                Boolean   @default(false)
+  isActive                  Boolean   @default(true)
+  forgotPasswordToken       String?
+  forgotPasswordTokenExpiry DateTime?
+  verifyToken               String?
+  verifyTokenExpiry         DateTime?
+  role                      UserRole  @default(USER)
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
 }

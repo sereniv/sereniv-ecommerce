@@ -10,7 +10,7 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center py-20">
           <h1 className="text-4xl md:text-6xl font-light tracking-tighter mb-4">
-            Skincare for the Minimalist
+            Skincare for the Sereniv
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
             Effective, transparent, and gentle formulations designed to simplify your routine.

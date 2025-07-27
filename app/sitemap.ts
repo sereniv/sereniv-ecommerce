@@ -1,47 +1,52 @@
 import { MetadataRoute } from 'next'
-import { prisma } from '@/lib/prisma'
+
+type SitemapEntry = {
+  url: string
+  lastModified?: string | Date
+  changeFrequency?:
+    | 'always'
+    | 'hourly'
+    | 'daily'
+    | 'weekly'
+    | 'monthly'
+    | 'yearly'
+    | 'never'
+  priority?: number
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://droomdroom.com/bitcoin-treasury-tracker'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://yoursite.com' // Replace with your actual domain
   
-  try {
-    // Get all entities for dynamic pages
-    const entities = await prisma.entity.findMany({
-      select: {
-        slug: true,
-        updatedAt: true,
-      },
-      orderBy: {
-        updatedAt: 'desc'
-      }
-    })
-
-    const staticPages = [
-      {
-        url: baseUrl,
-        lastModified: new Date(),
-        changeFrequency: 'daily' as const,
-        priority: 1.0,
-      }
-    ]
-
-    const entityPages = entities.map(entity => ({
-      url: `${baseUrl}/${entity.slug}`,
-      lastModified: entity.updatedAt ? new Date(entity.updatedAt) : new Date(),
-      changeFrequency: 'weekly' as const,
+  const staticPages: SitemapEntry[] = [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1,
+    },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
       priority: 0.8,
-    }))
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+  ]
 
-    return [...staticPages, ...entityPages]
+  // Uncomment and modify this section if you have dynamic content
+  /*
+  try {
+    const dynamicPages = await fetchDynamicPages() // Implement this function to fetch your dynamic pages
+    return [...staticPages, ...dynamicPages]
   } catch (error) {
     console.error('Error generating sitemap:', error)
-    return [
-      {
-        url: baseUrl,
-        lastModified: new Date(),
-        changeFrequency: 'daily',
-        priority: 1.0,
-      }
-    ]
   }
+  */
+
+  return staticPages
 }
