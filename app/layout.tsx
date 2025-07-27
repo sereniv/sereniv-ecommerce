@@ -1,6 +1,7 @@
 import "./globals.css"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
+import Script from "next/script"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Toaster } from "@/components/toaster"
@@ -84,22 +85,30 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
-      <script>
-        var clickRankAi = document.createElement("script");
-        clickRankAi.src = "https://js.clickrank.ai/seo/a2f08e6a-dc8a-4b26-849f-098224a52825/script?" + new Date().getTime();
-        clickRankAi.async = true;
-        document.head.appendChild(clickRankAi);
-      </script>
       <body className={inter.className}>
+          <Script
+            id="clickrank-ai"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                var clickRankAi = document.createElement("script");
+                clickRankAi.src = "https://js.clickrank.ai/seo/a2f08e6a-dc8a-4b26-849f-098224a52825/script?" + new Date().getTime();
+                clickRankAi.async = true;
+                document.head.appendChild(clickRankAi);
+              `
+            }}
+          />
           <OrganizationSchema
             name="DroomDroom"
             url={"https://droomdroom.com/bitcoin-treasury-tracker"}
             logo={`https://droomdroom.com/price/DroomDroom_light.svg`}
             description="Track real-time Bitcoin holdings of public companies & governments. Get in-depth analytics, historical data, and performance insights with Bitcoin Treasury Tracker powered by DroomDroom."
           />
+          <Header />
           <div className="relative flex min-h-screen flex-col antialiased bg-background text-foreground safe-area">
             {children}
           </div>
+          <Footer />
           <Toaster />
       </body>
     </html>

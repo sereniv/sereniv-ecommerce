@@ -15,8 +15,10 @@ const menuItems = [
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const handleScroll = () => {
       const isScrolled = window.scrollY > 10;
       if (isScrolled !== scrolled) {
@@ -30,20 +32,21 @@ export default function Header() {
     };
   }, [scrolled]);
 
+  // Prevent hydration mismatch by not rendering scroll-dependent styles until mounted
+  const headerClassName = cn(
+    "sticky top-0 z-50 w-full transition-all duration-300 safe-area-top",
+    mounted && scrolled ? "bg-white/80 backdrop-blur-lg shadow-md" : "bg-white"
+  );
+
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-300 safe-area-top",
-        scrolled ? "bg-white/80 backdrop-blur-lg shadow-md" : "bg-white"
-      )}
-    >
+    <header className={headerClassName}>
       <Container>
         <Flex justify="between" align="center" className="h-20">
           {/* Logo */}
           <Link href="/">
             <Image
-              className="h-8 w-auto"
-              src="https://droomdroom.com/price/DroomDroom_Black.svg"
+              className="h-20 w-auto"
+              src="/assets/generated-image (1).png"
               alt="DroomDroom Logo"
               width={180}
               height={30}
