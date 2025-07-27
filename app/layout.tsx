@@ -7,7 +7,6 @@ import Footer from "@/components/footer"
 import { Toaster } from "@/components/toaster"
 import { OrganizationSchema } from "@/components/schema-markup"
 
-
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -16,11 +15,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Bitcoin Treasury Tracker | DroomDroom',
-    default: 'Bitcoin Treasury Tracker: Real-Time Holding Analytics of Companies & Governments | DroomDroom',
+    template: 'Sereniv - Honest, Authentic & Transparent',
+    default: 'Sereniv - Honest, Authentic & Transparent',
   },
-  description: "Track real-time Bitcoin holdings of public companies & governments. Get in-depth analytics, historical data, and performance insights with Bitcoin Treasury Tracker powered by DroomDroom.",
-  keywords: "Bitcoin, Treasury, Tracker, Companies, Governments, Analytics, Historical Data, Performance Insights",
+  description: "We believe our products should be accessible to all, but we will never compromise on quality, ensuring only the best products reach you. Our products are priced to allow you",
+  keywords: "Sereniv , Beauty , Bearty Products",
   robots: {
     index: true,
     follow: true,
@@ -33,21 +32,21 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://droomdroom.com/bitcoin-treasury-tracker",
+    canonical: "https://sereniv.com",
   },
   openGraph: {
-    title: "Bitcoin Treasury Tracker | DroomDroom",
-    description: "Track real-time Bitcoin holdings of public companies & governments. Get in-depth analytics, historical data, and performance insights with Bitcoin Treasury Tracker powered by DroomDroom.",
-    url: "https://droomdroom.com/bitcoin-treasury-tracker",
-    siteName: "Bitcoin Treasury Tracker | DroomDroom",
+    title: "Sereniv - Honest, Authentic & Affordable Beauty Products",
+    description: "We believe our products should be accessible to all, but we will never compromise on quality, ensuring only the best products reach you. Our products are priced to allow you",
+    url: "/assets/sereniv-logo.png",
+    siteName: "Sereniv",
     locale: "en_US",
     type: "website",
     images: [
       {
-        url: "https://droomdroom.com/bitcoin-treasury-tracker/assets/og-image-new.png",
+        url: "",
         width: 1200,
         height: 630,
-        alt: "Bitcoin Treasury Tracker | DroomDroom",
+        alt: "Sereniv",
         type: "image/png",
       },
     ],
@@ -56,16 +55,16 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@droomdroom",
     creator: "@droomdroom",
-    title: "Bitcoin Treasury Tracker | DroomDroom",
-    description: "Track real-time Bitcoin holdings of public companies & governments. Get in-depth analytics, historical data, and performance insights with Bitcoin Treasury Tracker powered by DroomDroom.",
+    title: "Sereniv - Honest, Authentic & Affordable Beauty Products",
+    description: "We believe our products should be accessible to all, but we will never compromise on quality, ensuring only the best products reach you. Our products are priced to allow you",
     images: {
-      url: "https://droomdroom.com/bitcoin-treasury-tracker/assets/og-image-new.png",
-      alt: "Bitcoin Treasury Tracker | DroomDroom",
+      url: "/assets/sereniv-logo.png",
+      alt: "Sereniv - Honest , Authentic & Transparent",
     },
   },
   other: {
     'apple-mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-title': 'Bitcoin Treasury Tracker',
+    'apple-mobile-web-app-title': 'Sereniv - Honest , Authentic & Transparent',
     'format-detection': 'telephone=no',
   }
 }
@@ -86,23 +85,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className={inter.className}>
-          <Script
-            id="clickrank-ai"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                var clickRankAi = document.createElement("script");
-                clickRankAi.src = "https://js.clickrank.ai/seo/a2f08e6a-dc8a-4b26-849f-098224a52825/script?" + new Date().getTime();
-                clickRankAi.async = true;
-                document.head.appendChild(clickRankAi);
-              `
-            }}
-          />
           <OrganizationSchema
-            name="DroomDroom"
-            url={"https://droomdroom.com/bitcoin-treasury-tracker"}
-            logo={`https://droomdroom.com/price/DroomDroom_light.svg`}
-            description="Track real-time Bitcoin holdings of public companies & governments. Get in-depth analytics, historical data, and performance insights with Bitcoin Treasury Tracker powered by DroomDroom."
+            name="Sereniv"
+            url={"https://sereniv.com"}
+            logo={"/assets/sereniv-logo.png"}
+            description="We believe our products should be accessible to all, but we will never compromise on quality, ensuring only the best products reach you. Our products are priced to allow you"
           />
           <Header />
           <div className="relative flex min-h-screen flex-col antialiased bg-background text-foreground safe-area">

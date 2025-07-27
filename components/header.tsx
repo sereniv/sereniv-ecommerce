@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Container, Flex } from "./ui";
 import { cn } from "@/lib/utils";
 import { Search, User, ShoppingCart } from 'lucide-react';
+import SerenivLogo from "@/public/assets/sereniv-logo.png"
 
 const menuItems = [
   { text: 'Shop', url: '/shop' },
@@ -46,8 +47,8 @@ export default function Header() {
           <Link href="/">
             <Image
               className="h-20 w-auto"
-              src="/assets/generated-image (1).png"
-              alt="DroomDroom Logo"
+              src={SerenivLogo}
+              alt="Sereniv Logo"
               width={180}
               height={30}
               priority
