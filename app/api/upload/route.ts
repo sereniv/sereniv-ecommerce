@@ -9,11 +9,10 @@ const minioClient = new Minio.Client({
   secretKey: process.env.MINIO_SECRET_KEY || '8piyA69z7HVSgvGfp1wXIByIbcll7jOYKCQ6djB3',
 });
 
-const BUCKET_NAME = 'bitcointreasurybucket';
+const BUCKET_NAME = 'serenivbucket';
 
-// Add CORS headers helper function
 function addCorsHeaders(response: NextResponse) {
-  response.headers.set('Access-Control-Allow-Origin', 'https://droomdroom.com');
+  response.headers.set('Access-Control-Allow-Origin', 'https://sereniv.in');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   return response;
@@ -61,7 +60,7 @@ export async function POST(req: NextRequest) {
     const expiryInSeconds = 7 * 24 * 60 * 60;
     const presignedUrl = await minioClient.presignedGetObject(BUCKET_NAME, filename, expiryInSeconds);
 
-    const directUrl = `https://${BUCKET_NAME}.bucket.droomdroom.online/${filename}`;
+    const directUrl = `https://${BUCKET_NAME}.bucket.sereniv.online/${filename}`;
 
     const response = NextResponse.json({
       success: true,
