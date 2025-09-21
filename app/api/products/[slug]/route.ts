@@ -24,10 +24,12 @@ export async function PUT(
   req: Request,
   { params }: { params: { slug: string } }
 ) {
+
+  console.log
   try {
     const body = await req.json();
     const updatedProduct = await prisma.product.update({
-      where: { id: params.slug },
+      where: { slug: params.slug },
       data: body,
     });
 

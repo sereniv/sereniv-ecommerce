@@ -1,9 +1,14 @@
+'use client'
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Container } from '@/components/ui/container';
 import { Button } from '@/components/ui/button';
+import { useProducts } from '@/hooks/use-products';
 
 export default function Home() {
+  const { products, loading } = useProducts();
+
   return (
     <Container>
       <div className="space-y-16 pb-16">
@@ -15,7 +20,7 @@ export default function Home() {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
             Effective, transparent, and gentle formulations designed to simplify your routine.
           </p>
-          <Link href="/shop/all">
+          <Link href="/products">
             <Button size="lg" className="bg-gray-900 text-white hover:bg-black rounded-full px-8 py-3 text-base">
               Shop All Products
             </Button>
@@ -25,56 +30,36 @@ export default function Home() {
         {/* Featured Products Section */}
         <div>
           <h2 className="text-3xl font-light text-center mb-10">Featured Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {/* Product 1 */}
-            <div className="text-center group">
-              <Link href="/shop/product/serum-01">
-                <div className="bg-gray-100 rounded-lg overflow-hidden mb-4 transition-shadow duration-300 group-hover:shadow-lg">
-                  <Image
-                    src="/images/serum-placeholder.jpg" // Placeholder image
-                    alt="Niacinamide Serum"
-                    width={400}
-                    height={400}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+              {[...Array(3)].map((_, index) => (
+                <div key={index} className="text-center">
+                  <div className="bg-gray-200 animate-pulse rounded-lg overflow-hidden mb-4 h-[200px] w-[200px] mx-auto" />
+                  <div className="h-6 bg-gray-200 animate-pulse rounded w-3/4 mx-auto mb-2" />
+                  <div className="h-4 bg-gray-200 animate-pulse rounded w-1/2 mx-auto" />
                 </div>
-                <h3 className="font-semibold text-lg">Niacinamide 10%</h3>
-                <p className="text-gray-600">Clarifying Serum</p>
-              </Link>
+              ))}
             </div>
-            {/* Product 2 */}
-            <div className="text-center group">
-              <Link href="/shop/product/moisturizer-01">
-                <div className="bg-gray-100 rounded-lg overflow-hidden mb-4 transition-shadow duration-300 group-hover:shadow-lg">
-                  <Image
-                    src="/images/moisturizer-placeholder.jpg" // Placeholder image
-                    alt="Vitamin C Moisturizer"
-                    width={400}
-                    height={400}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+              {products &&    products.length > 0 &&  products.slice(0, 3).map((product) => (
+                <div key={product.id} className="text-center group">
+                  <Link href={`/shop/product/${product.id}`}>
+                    <div className="bg-gray-100 rounded-lg overflow-hidden mb-4 transition-shadow duration-300 group-hover:shadow-lg w-[250px] h-[320px] mx-auto">
+                      <Image
+                        src={product.thumbnail || "/images/placeholder.jpg"}
+                        alt={product.name}
+                        width={250}
+                        height={320}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                    <h3 className="font-semibold text-lg">{product.name}</h3>
+                  </Link>
                 </div>
-                <h3 className="font-semibold text-lg">Vitamin C</h3>
-                <p className="text-gray-600">Brightening Moisturizer</p>
-              </Link>
+              ))}
             </div>
-            {/* Product 3 */}
-            <div className="text-center group">
-              <Link href="/shop/product/cleanser-01">
-                <div className="bg-gray-100 rounded-lg overflow-hidden mb-4 transition-shadow duration-300 group-hover:shadow-lg">
-                  <Image
-                    src="/images/cleanser-placeholder.jpg" // Placeholder image
-                    alt="Gentle Cleanser"
-                    width={400}
-                    height={400}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <h3 className="font-semibold text-lg">Oat Cleanser</h3>
-                <p className="text-gray-600">Gentle Face Wash</p>
-              </Link>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Value Propositions Section */}
