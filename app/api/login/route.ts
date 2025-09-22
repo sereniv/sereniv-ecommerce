@@ -95,7 +95,6 @@ export async function POST(request: NextRequest) {
     console.log(`[${requestId}] Login successful for user ${user.id}`, {
       totalDuration: Date.now() - parseInt(requestId, 36),
       userRole: user.role || 'N/A',
-      lastLogin: user.lastLogin || 'N/A'
     });
 
     return NextResponse.json({
