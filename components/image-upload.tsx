@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, useCallback } from 'react'
 import { ImagePlus, Loader2, X, Upload } from 'lucide-react'
@@ -19,7 +19,7 @@ interface ImageUploadProps {
   maxSizeMB?: number
 }
 
-export function ImageUpload({
+export default function ImageUpload({
   value,
   onChange,
   disabled,
@@ -60,7 +60,7 @@ export function ImageUpload({
 
       const uploadUrl = process.env.NEXT_PUBLIC_UPLOAD_TARGET_URL || process.env.UPLOAD_TARGET_URL || getApiUrl('/upload')
       console.log('Using upload URL:', uploadUrl)
-      
+
       const response = await fetch(uploadUrl, {
         method: 'POST',
         body: formData,
@@ -72,7 +72,7 @@ export function ImageUpload({
 
       const data = await response.json()
       onChange(data.url)
-      
+
       toast({
         title: "Upload successful",
         description: "Your image has been uploaded successfully.",
@@ -107,13 +107,13 @@ export function ImageUpload({
   return (
     <div className={cn("space-y-4 w-full", className)}>
       {!value && (
-        <div 
-          {...getRootProps()} 
+        <div
+          {...getRootProps()}
           className={cn(
-            "relative w-full h-48 rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer group",
+            "relative w-full h-64 rounded-lg border-2 border-dashed border-gray-200 bg-gray-100 transition-all duration-300 cursor-pointer group",
             isDragActive
-              ? "border-orange-500 bg-orange-50/50 dark:bg-orange-950/50"
-              : "border-orange-200/50 dark:border-orange-800/50 bg-gradient-to-br from-orange-50/30 to-orange-100/20 dark:from-orange-950/30 dark:to-orange-900/20 hover:border-orange-300 dark:hover:border-orange-700 hover:bg-orange-50/50 dark:hover:bg-orange-950/50",
+              ? "border-gray-400 bg-gray-200"
+              : "hover:border-gray-400 hover:bg-gray-200",
             disabled || isUploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
           )}
         >
@@ -121,28 +121,28 @@ export function ImageUpload({
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
             {isUploading ? (
               <>
-                <div className="p-3 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200/50 dark:from-orange-800/50 dark:to-orange-700/30 border border-orange-200 dark:border-orange-700 shadow-lg mb-4">
-                  <Loader2 className="w-8 h-8 animate-spin text-orange-600 dark:text-orange-400" />
+                <div className="p-3 rounded-lg bg-gray-200 border border-gray-200 shadow-sm mb-4">
+                  <Loader2 className="w-8 h-8 animate-spin text-gray-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-200 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   Uploading...
                 </h3>
-                <p className="text-sm text-orange-600 dark:text-orange-400">
+                <p className="text-sm text-gray-600">
                   Please wait while we upload your image
                 </p>
               </>
             ) : (
               <>
-                <div className="p-3 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200/50 dark:from-orange-800/50 dark:to-orange-700/30 border border-orange-200 dark:border-orange-700 shadow-lg mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Upload className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+                <div className="p-3 rounded-lg bg-white border border-gray-200 shadow-sm mb-4 group-hover:scale-105 transition-transform duration-300">
+                  <Upload className="w-8 h-8 text-gray-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-200 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {title}
                 </h3>
-                <p className="text-sm text-orange-600 dark:text-orange-400 mb-2">
+                <p className="text-sm text-gray-600 mb-2">
                   {isDragActive ? 'Drop the image here' : description}
                 </p>
-                <p className="text-xs text-orange-500 dark:text-orange-500">
+                <p className="text-xs text-gray-600">
                   JPG, PNG, GIF (max {maxSizeMB}MB)
                 </p>
               </>
@@ -150,10 +150,10 @@ export function ImageUpload({
           </div>
         </div>
       )}
-      
+
       {value && (
         <div className="relative group">
-          <div className="relative w-full h-48 rounded-xl overflow-hidden border border-orange-200/50 dark:border-orange-800/50 bg-gradient-to-br from-orange-50/50 to-orange-100/30 dark:from-orange-950/50 dark:to-orange-900/30">
+          <div className="relative w-full h-64 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 shadow-sm group-hover:shadow-lg transition-shadow">
             <Image
               fill
               className="object-cover"
@@ -163,9 +163,7 @@ export function ImageUpload({
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
               <Button
                 type="button"
-                variant="destructive"
-                size="sm"
-                className="bg-red-500 hover:bg-red-600 text-white"
+                className="bg-red-600 hover:bg-red-700 text-white rounded-full px-8 py-3"
                 onClick={() => onChange('')}
                 disabled={disabled}
               >

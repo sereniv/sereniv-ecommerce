@@ -69,8 +69,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
   }, []);
 
-  console.log("user", user);
-
   const value: AuthContextType = {
     user,
     isLoading,
