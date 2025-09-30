@@ -119,10 +119,9 @@ function SignupPageContent() {
         throw new Error(data.message || "Signup failed");
       }
 
-      // Show success message and redirect to login
       setTimeout(() => {
         router.push(
-          "/login?message=Please check your email to verify your account"
+          "/"
         );
       }, 1000);
     } catch (error) {
@@ -158,7 +157,6 @@ function SignupPageContent() {
                   First Name
                 </label>
                 <div className="relative">
-                  {/* <User className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" /> */}
                   <Input
                     id="firstName"
                     name="firstName"
@@ -182,7 +180,6 @@ function SignupPageContent() {
                   Last Name
                 </label>
                 <div className="relative">
-                  {/* <User className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" /> */}
                   <Input
                     id="lastName"
                     name="lastName"
@@ -205,7 +202,6 @@ function SignupPageContent() {
                   Email Address
                 </label>
                 <div className="relative">
-                  {/* <Mail className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" /> */}
                   <Input
                     id="email"
                     name="email"
@@ -229,7 +225,6 @@ function SignupPageContent() {
                   Password
                 </label>
                 <div className="relative">
-                  {/* <Lock className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" /> */}
                   <Input
                     id="password"
                     name="password"
@@ -265,7 +260,6 @@ function SignupPageContent() {
                   Confirm Password
                 </label>
                 <div className="relative">
-                  {/* <Lock className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" /> */}
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"

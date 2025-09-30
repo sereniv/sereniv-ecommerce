@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { hashPassword } from '@/lib/auth';
-import { generateVerifyToken } from '@/lib/utils';
-import { sendEmail } from '@/helpers/mailer';
+import { generateAccessToken, generateRefreshToken, createUser } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,49 +12,56 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await createUser(firstName, lastName, email, password);
 
-    if (existingUser) {
+    if (!user) {
       return NextResponse.json({
         success: false,
-        message: 'User with this email already exists'
-      }, { status: 409 });
+        message: 'User already exists'
+      }, { status: 400 });
     }
 
-    const hashedPassword = await hashPassword(password);
+    let accessToken = await generateAccessToken(user);
+    let refreshToken = await generateRefreshToken(user);
 
-    const { verifyToken, verifyTokenExpiry } = generateVerifyToken(24);
-
-    const createdUser = await prisma.user.create({
-      data: {
-        firstName,
-        lastName,
-        email,
-        password: hashedPassword,
-        verifyToken,
-        verifyTokenExpiry,
-        isVerified: true,
-        isActive: true,
-        role: 'USER'
-      }
+    const nextResponse = NextResponse.json({
+      success: true,
+      data: user,
     });
 
-    // Send verification email
-    // try {
-    //   await sendEmail(email, "VERIFY");
-    // } catch (emailError) {
-    //   console.error('Email sending failed:', emailError);
-    // }
+    nextResponse.cookies.set({
+      name: 'user',
+      value: JSON.stringify(user),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 1,
+    });
 
-    const { password: _, verifyToken: __, verifyTokenExpiry: ___, ...userData } = createdUser;
+    if (accessToken && refreshToken) {
+      nextResponse.cookies.set({
+        name: 'accessToken',
+        value: accessToken,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 1,
+      });
 
-    return NextResponse.json({
-      success: true,
-      message: 'User created successfully. Please check your email to verify your account.',
-      data: userData
-    }, { status: 201 });
+      nextResponse.cookies.set({
+        name: 'refreshToken',
+        value: refreshToken,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+      });
+    }
+
+    return nextResponse;
 
   } catch (error) {
     console.error('Signup error:', error);

@@ -17,6 +17,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function getPageUrl(path: string) {
+  if (typeof window === 'undefined') {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://Sereniv.in';
+    const fullPath = `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    return fullPath.replace(/([^:]\/)\/+/g, '$1');
+  }
+  const basePath = '/';
+  return `${basePath}${path.startsWith('/') ? '' : '/'}${path}`;
+}
+
+
 
 export function getApiUrl(path: string) {
   if (process.env.NEXT_PUBLIC_API_URL) {

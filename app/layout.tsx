@@ -1,3 +1,4 @@
+// @ts-ignore
 import "./globals.css"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
@@ -6,7 +7,6 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Toaster } from "@/components/toaster"
 import { OrganizationSchema } from "@/components/schema-markup"
-import { AuthProvider } from "@/lib/auth-context"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -92,14 +92,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
             logo={"/assets/sereniv-logo.png"}
             description="We believe our products should be accessible to all, but we will never compromise on quality, ensuring only the best products reach you. Our products are priced to allow you"
           />
-          <AuthProvider>
             <Header />
             <div className="relative flex min-h-screen flex-col antialiased bg-background text-foreground safe-area">
               {children}
             </div>
             <Footer />
             <Toaster />
-          </AuthProvider>
       </body>
     </html>
   )

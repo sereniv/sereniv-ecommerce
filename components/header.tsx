@@ -6,8 +6,8 @@ import Link from "next/link";
 import { Container, Flex } from "./ui";
 import { cn } from "@/lib/utils";
 import { Search, User, ShoppingCart, LogOut } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
 import SerenivLogo from "@/public/assets/sereniv-logo.png";
+import { useUser } from "@/hooks/use-user";
 
 const menuItems = [
   { text: "Shop", url: "/shop" },
@@ -19,7 +19,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useUser();
 
   useEffect(() => {
     setMounted(true);

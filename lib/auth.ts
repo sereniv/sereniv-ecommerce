@@ -1,10 +1,12 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { prisma } from './prisma';
-import { User } from '@prisma/client';
+import { User, UserRole } from './types/user';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
-const JWT_EXPIRES_IN = '7d';
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'your-access-secret-key-change-in-production';
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your-refresh-secret-key-change-in-production';
+const ACCESS_TOKEN_EXPIRES_IN = '1d';
+const REFRESH_TOKEN_EXPIRES_IN = '7d';
 
 export interface JWTPayload {
   userId: string;
@@ -12,19 +14,38 @@ export interface JWTPayload {
   role: string;
 }
 
-export async function generateToken(user: User): Promise<string> {
+export async function generateAccessToken(user: User): Promise<string> {
   const payload: JWTPayload = {
     userId: user.id,
     email: user.email,
     role: user.role,
   };
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+  return jwt.sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRES_IN });
 }
 
-export async function verifyToken(token: string): Promise<JWTPayload | null> {
+export async function generateRefreshToken(user: User): Promise<string> {
+  const payload: JWTPayload = {
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+  };
+
+  return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRES_IN });
+}
+
+export async function verifyAccessToken(token: string): Promise<JWTPayload | null> {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET) as JWTPayload;
+    return decoded;
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function verifyRefreshToken(token: string): Promise<JWTPayload | null> {
+  try {
+    const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET) as JWTPayload;
     return decoded;
   } catch (error) {
     return null;
@@ -62,6 +83,36 @@ export async function authenticateUser(email: string, password: string): Promise
   }
 }
 
+export async function createUser(firstName: string, lastName: string, email: string, password: string, role = 'USER'): Promise<User | null> {
+  try {
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      console.error('User with this email already exists');
+      return null;
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const newUser = await prisma.user.create({
+      data: {
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        role : role ==="ADMIN" ? UserRole.ADMIN : UserRole.USER,
+      },
+    });
+
+    return newUser;
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return null;
+  }
+}
+
 export async function getUserById(userId: string): Promise<User | null> {
   try {
     return await prisma.user.findUnique({
@@ -71,4 +122,4 @@ export async function getUserById(userId: string): Promise<User | null> {
     console.error('Error fetching user:', error);
     return null;
   }
-} 
+}

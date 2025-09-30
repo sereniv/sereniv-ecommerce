@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { getApiUrl } from "@/lib/utils";
-import { useAuth } from "@/lib/auth-context";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
 function LoginPageSkeleton() {
@@ -16,13 +15,13 @@ function LoginPageSkeleton() {
       <div className="min-h-[60vh] flex items-center justify-center py-20">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <div className="h-8 w-48 bg-gray-200 rounded mx-auto mb-4"></div>
-            <div className="h-4 w-64 bg-gray-200 rounded mx-auto"></div>
+            <div className="h-8 w-48 bg-gray-200 rounded mx-auto mb-4 animate-pulse"></div>
+            <div className="h-4 w-64 bg-gray-200 rounded mx-auto animate-pulse"></div>
           </div>
           <div className="space-y-4">
-            <div className="h-12 w-full bg-gray-200 rounded"></div>
-            <div className="h-12 w-full bg-gray-200 rounded"></div>
-            <div className="h-12 w-full bg-gray-200 rounded"></div>
+            <div className="h-12 w-full bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-12 w-full bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-12 w-full bg-gray-200 rounded-lg animate-pulse"></div>
           </div>
         </div>
       </div>
@@ -32,50 +31,57 @@ function LoginPageSkeleton() {
 
 function LoginPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const emailParam = searchParams.get("email");
-    const passwordParam = searchParams.get("password");
-    const messageParam = searchParams.get("message");
+  }, []);
 
-    if (emailParam && passwordParam) {
-      setEmail(emailParam);
-      setPassword(passwordParam);
-      handleLogin(emailParam, passwordParam);
-    }
-
-    if (messageParam) {
-      setMessage(decodeURIComponent(messageParam));
-    }
-  }, [searchParams]);
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      router.push("/");
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  if (!mounted || authLoading) {
+  if (!mounted) {
     return <LoginPageSkeleton />;
   }
 
-  // If already authenticated, show loading
-  if (isAuthenticated) {
-    return <LoginPageSkeleton />;
-  }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setError("");
+  };
 
-  const handleLogin = async (emailValue: string, passwordValue: string) => {
+  const validateForm = () => {
+    if (!formData.email.trim()) {
+      setError("Email is required");
+      return false;
+    }
+    if (!formData.email.includes("@")) {
+      setError("Please enter a valid email address");
+      return false;
+    }
+    if (!formData.password) {
+      setError("Password is required");
+      return false;
+    }
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
     setIsLoading(true);
     setError("");
 
@@ -85,33 +91,27 @@ function LoginPageContent() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: emailValue, password: passwordValue }),
+        body: JSON.stringify({
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Invalid credentials");
+        throw new Error(data.message || "Login failed");
       }
 
-      // Use auth context to login
-      login(data.data.token, data.data.user);
-
-      // Add a small delay for better UX
       setTimeout(() => {
-        router.push("/");
-      }, 500);
+        router.push("/cart");
+      }, 1000);
     } catch (error) {
       console.error("Login error:", error);
       setError(error instanceof Error ? error.message : "Failed to login");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleLogin(email, password);
   };
 
   return (
@@ -121,9 +121,9 @@ function LoginPageContent() {
           {/* Header */}
           <div className="text-center">
             <h1 className="text-3xl font-light tracking-tighter mb-2">
-              Welcome Back
+              Sign In
             </h1>
-            <p className="text-gray-600">Sign in to your account to continue</p>
+            <p className="text-gray-600">Welcome back to your account</p>
           </div>
 
           {/* Form */}
@@ -139,11 +139,16 @@ function LoginPageContent() {
                 <div className="relative">
                   {/* <Mail className="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" /> */}
                   <Input
+                    id="email"
+                    name="email"
                     type="email"
+                    autoComplete="email"
+                    required
+                    className="pl-16 h-12 text-base border-gray-300 focus:border-gray-900 focus:ring-gray-900"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-12 w-full"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -161,12 +166,12 @@ function LoginPageContent() {
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     required
                     className="pl-16 pr-12 h-12 text-base border-gray-300 focus:border-gray-900 focus:ring-gray-900"
                     placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={formData.password}
+                    onChange={handleInputChange}
                     disabled={isLoading}
                   />
                   <button
@@ -185,21 +190,18 @@ function LoginPageContent() {
               </div>
             </div>
 
-            {message && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-green-700">{message}</p>
-              </div>
-            )}
-
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div
+                id="form-error"
+                className="bg-red-50 border border-red-200 rounded-lg p-4"
+              >
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
 
             <Button
               type="submit"
-              disabled={isLoading || !email || !password}
+              disabled={isLoading || !formData.email || !formData.password}
               className="w-full h-12 text-base font-medium bg-gray-900 text-white hover:bg-black rounded-full px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
@@ -208,7 +210,7 @@ function LoginPageContent() {
                   Signing in...
                 </div>
               ) : (
-                "Sign in"
+                "Sign In"
               )}
             </Button>
           </form>
@@ -216,12 +218,12 @@ function LoginPageContent() {
           {/* Footer */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
+              Don’t have an account?{" "}
               <Link
                 href="/signup"
                 className="text-gray-900 hover:text-black font-medium"
               >
-                Create account
+                Sign up instead
               </Link>
             </p>
           </div>

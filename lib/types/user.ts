@@ -6,16 +6,12 @@ export enum UserRole {
 export interface User {
   id: string;
   firstName: string;
-  lastName?: string;
+  lastName: string | null;
   email: string;
   password: string;
   isVerified: boolean;
   isActive: boolean;
-  forgotPasswordToken?: string;
-  forgotPasswordTokenExpiry?: Date;
-  verifyToken?: string;
-  verifyTokenExpiry?: Date;
-  role: UserRole;
+  role: string;
   createdAt: Date;
   updatedAt: Date;
 }

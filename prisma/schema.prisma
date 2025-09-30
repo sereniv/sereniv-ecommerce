@@ -20,10 +20,6 @@ model User {
   password                  String
   isVerified                Boolean   @default(false)
   isActive                  Boolean   @default(true)
-  forgotPasswordToken       String?
-  forgotPasswordTokenExpiry DateTime?
-  verifyToken               String?
-  verifyTokenExpiry         DateTime?
   role                      UserRole  @default(USER)
   carts                     Cart[]
   createdAt                 DateTime  @default(now())
