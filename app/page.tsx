@@ -43,15 +43,15 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {products &&    products.length > 0 &&  products.slice(0, 3).map((product) => (
-                <div key={product.id} className="text-center group">
-                  <Link href={`/shop/product/${product.id}`}>
-                    <div className="bg-gray-100 rounded-lg overflow-hidden mb-4 transition-shadow duration-300 group-hover:shadow-lg w-[250px] h-[320px] mx-auto">
+                <div key={product.id} className="text-center group w-[300px]">
+                  <Link href={`/products/${product.slug}`}>
+                    <div className="bg-gray-100 rounded-lg overflow-hidden mb-4 transition-shadow duration-300 group-hover:shadow-lg w-[300px] h-[300px] mx-auto">
                       <Image
                         src={product.thumbnail || "/images/placeholder.jpg"}
                         alt={product.name}
                         width={250}
                         height={320}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
                     <h3 className="font-semibold text-lg">{product.name}</h3>
