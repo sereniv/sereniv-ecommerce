@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
-import { Product } from "@/lib/types/product";
+import { Product } from "@/lib/types";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -220,7 +220,7 @@ export default function ProductsAdminPage() {
             <div className="text-center py-10">
               <P className="text-lg text-gray-600 mb-4">No products found</P>
               <Button className="bg-gray-900 hover:bg-black text-white rounded-full px-8 py-3">
-                <Link href="admin/products/add-product">Add Product</Link>
+                <Link href="products/add-product">Add Product</Link>
               </Button>
             </div>
           ) : (

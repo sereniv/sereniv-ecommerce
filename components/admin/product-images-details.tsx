@@ -1,135 +1,153 @@
-'use client'
+"use client";
 
-import { useState, useCallback } from 'react'
-import { ImagePlus, Loader2, X, Upload, ArrowUp, ArrowDown } from 'lucide-react'
-import Image from 'next/image'
-import { Button } from '@/components/ui/button'
-import { useToast } from '@/components/ui/use-toast'
-import { useDropzone } from 'react-dropzone'
-import { getApiUrl } from '@/lib/utils'
-import { cn } from '@/lib/utils'
-import { Product } from '@/lib/types/product'
+import { useState, useCallback } from "react";
+import {
+  ImagePlus,
+  Loader2,
+  X,
+  Upload,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { useDropzone } from "react-dropzone";
+import { getApiUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { Product } from "@/lib/types";
 
 interface ProductImagesDetailsProps {
-  formData: Product
-  setFormData: (formData: Product) => void
-  disabled?: boolean
-  className?: string
+  formData: Product;
+  setFormData: (formData: Product) => void;
+  disabled?: boolean;
+  className?: string;
 }
 
 export default function ProductImagesDetails({
   formData,
   setFormData,
   disabled = false,
-  className
+  className,
 }: ProductImagesDetailsProps) {
-  const [isUploading, setIsUploading] = useState(false)
-  const { toast } = useToast()
-  const maxImages = 5
-  const maxSizeMB = 5
+  const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
+  const maxImages = 5;
+  const maxSizeMB = 5;
 
-  const handleUpload = useCallback(async (file: File) => {
-    try {
-      // Check file size
-      if (file.size > maxSizeMB * 1024 * 1024) {
+  const handleUpload = useCallback(
+    async (file: File) => {
+      try {
+        // Check file size
+        if (file.size > maxSizeMB * 1024 * 1024) {
+          toast({
+            title: "File too large",
+            description: `Please upload an image smaller than ${maxSizeMB}MB`,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Check file type
+        if (!file.type.startsWith("image/")) {
+          toast({
+            title: "Invalid file type",
+            description: "Please upload an image file (JPG, PNG, GIF)",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setIsUploading(true);
+
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", file);
+
+        const uploadUrl =
+          process.env.NEXT_PUBLIC_UPLOAD_TARGET_URL ||
+          process.env.UPLOAD_TARGET_URL ||
+          getApiUrl("/upload");
+        const response = await fetch(uploadUrl, {
+          method: "POST",
+          body: formDataUpload,
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        setFormData({
+          ...formData,
+          images: [...(formData.images || []), data.url],
+        });
+
         toast({
-          title: "File too large",
-          description: `Please upload an image smaller than ${maxSizeMB}MB`,
-          variant: "destructive",
-        })
-        return
-      }
-
-      // Check file type
-      if (!file.type.startsWith('image/')) {
+          title: "Upload successful",
+          description: "Your image has been uploaded successfully.",
+        });
+      } catch (error) {
+        console.error("Error uploading image:", error);
         toast({
-          title: "Invalid file type",
-          description: "Please upload an image file (JPG, PNG, GIF)",
+          title: "Upload failed",
+          description:
+            "There was an error uploading your image. Please try again.",
           variant: "destructive",
-        })
-        return
+        });
+      } finally {
+        setIsUploading(false);
       }
+    },
+    [formData, setFormData, toast]
+  );
 
-      setIsUploading(true)
-
-      const formDataUpload = new FormData()
-      formDataUpload.append('file', file)
-
-      const uploadUrl = process.env.NEXT_PUBLIC_UPLOAD_TARGET_URL || process.env.UPLOAD_TARGET_URL || getApiUrl('/upload')
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formDataUpload,
-      })
-
-      if (!response.ok) {
-        throw new Error('Upload failed')
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (acceptedFiles?.length > 0) {
+        if ((formData.images?.length || 0) + acceptedFiles.length > maxImages) {
+          toast({
+            title: "Too many images",
+            description: `You can upload up to ${maxImages} images.`,
+            variant: "destructive",
+          });
+          return;
+        }
+        acceptedFiles.forEach((file) => handleUpload(file));
       }
-
-      const data = await response.json()
-      setFormData({
-        ...formData,
-        images: [...(formData.images || []), data.url]
-      })
-
-      toast({
-        title: "Upload successful",
-        description: "Your image has been uploaded successfully.",
-      })
-    } catch (error) {
-      console.error('Error uploading image:', error)
-      toast({
-        title: "Upload failed",
-        description: "There was an error uploading your image. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsUploading(false)
-    }
-  }, [formData, setFormData, toast])
-
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles?.length > 0) {
-      if ((formData.images?.length || 0) + acceptedFiles.length > maxImages) {
-        toast({
-          title: "Too many images",
-          description: `You can upload up to ${maxImages} images.`,
-          variant: "destructive",
-        })
-        return
-      }
-      acceptedFiles.forEach((file) => handleUpload(file))
-    }
-  }, [handleUpload, formData.images, toast])
+    },
+    [handleUpload, formData.images, toast]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpg', '.jpeg', '.png', '.gif']
+      "image/*": [".jpg", ".jpeg", ".png", ".gif"],
     },
     maxFiles: maxImages - (formData.images?.length || 0),
-    disabled: disabled || isUploading || (formData.images?.length || 0) >= maxImages
-  })
+    disabled:
+      disabled || isUploading || (formData.images?.length || 0) >= maxImages,
+  });
 
   const handleRemove = (index: number) => {
-    const newImages = (formData.images || []).filter((_, i) => i !== index)
-    setFormData({ ...formData, images: newImages })
-  }
+    const newImages = (formData.images || []).filter((_, i) => i !== index);
+    setFormData({ ...formData, images: newImages });
+  };
 
   const handleMoveUp = (index: number) => {
-    if (index === 0) return
-    const newImages = [...(formData.images || [])]
-    const [movedItem] = newImages.splice(index, 1)
-    newImages.splice(index - 1, 0, movedItem)
-    setFormData({ ...formData, images: newImages })
-  }
+    if (index === 0) return;
+    const newImages = [...(formData.images || [])];
+    const [movedItem] = newImages.splice(index, 1);
+    newImages.splice(index - 1, 0, movedItem);
+    setFormData({ ...formData, images: newImages });
+  };
 
   const handleMoveDown = (index: number) => {
-    if (index === (formData.images?.length || 0) - 1) return
-    const newImages = [...(formData.images || [])]
-    const [movedItem] = newImages.splice(index, 1)
-    newImages.splice(index + 1, 0, movedItem)
-    setFormData({ ...formData, images: newImages })
-  }
+    if (index === (formData.images?.length || 0) - 1) return;
+    const newImages = [...(formData.images || [])];
+    const [movedItem] = newImages.splice(index, 1);
+    newImages.splice(index + 1, 0, movedItem);
+    setFormData({ ...formData, images: newImages });
+  };
 
   return (
     <div className={cn("space-y-6 w-full", className)}>
@@ -142,12 +160,21 @@ export default function ProductImagesDetails({
             isDragActive
               ? "border-gray-400 bg-gray-200"
               : "hover:border-gray-400 hover:bg-gray-200",
-            (disabled || isUploading || (formData.images?.length || 0) >= maxImages)
-              ? 'opacity-50 cursor-not-allowed'
-              : 'cursor-pointer'
+            disabled ||
+              isUploading ||
+              (formData.images?.length || 0) >= maxImages
+              ? "opacity-50 cursor-not-allowed"
+              : "cursor-pointer"
           )}
         >
-          <input {...getInputProps()} disabled={disabled || isUploading || (formData.images?.length || 0) >= maxImages} />
+          <input
+            {...getInputProps()}
+            disabled={
+              disabled ||
+              isUploading ||
+              (formData.images?.length || 0) >= maxImages
+            }
+          />
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
             {isUploading ? (
               <>
@@ -170,7 +197,9 @@ export default function ProductImagesDetails({
                   Upload Product Images
                 </h3>
                 <p className="text-sm text-gray-600 mb-2">
-                  {isDragActive ? 'Drop the images here' : 'Drag and drop images here, or click to select'}
+                  {isDragActive
+                    ? "Drop the images here"
+                    : "Drag and drop images here, or click to select"}
                 </p>
                 <p className="text-xs text-gray-600">
                   JPG, PNG, GIF (max {maxSizeMB}MB, up to {maxImages} images)
@@ -184,7 +213,9 @@ export default function ProductImagesDetails({
       {/* Image Grid */}
       {(formData.images?.length || 0) > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Uploaded Images</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Uploaded Images
+          </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {formData.images?.map((url, index) => (
               <div
@@ -223,7 +254,9 @@ export default function ProductImagesDetails({
                     type="button"
                     className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full"
                     onClick={() => handleMoveDown(index)}
-                    disabled={disabled || index === (formData.images?.length || 0) - 1}
+                    disabled={
+                      disabled || index === (formData.images?.length || 0) - 1
+                    }
                   >
                     <ArrowDown className="w-4 h-4 text-gray-600" />
                   </Button>
@@ -234,5 +267,5 @@ export default function ProductImagesDetails({
         </div>
       )}
     </div>
-  )
+  );
 }

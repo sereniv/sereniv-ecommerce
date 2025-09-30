@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button, Input, Container } from "@/components/ui";
 import { H1, P, Small } from "@/components/ui/typography";
 import { toast } from "@/components/ui/use-toast";
-import { Product } from "@/lib/types/product";
+import { Product } from "@/lib/types";
 import Image from "next/image";
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -134,7 +134,7 @@ export default function ProductsPage() {
                 products.map((product) => (
                   <div key={product.id} className="text-center group w-[300px]">
                     <Link href={`/products/${product.slug}`}>
-                      <div className="bg-green-400 rounded-lg overflow-hidden mb-4 transition-shadow duration-300 group-hover:shadow-lg w-[300px] h-[300px] mx-auto">
+                      <div className="rounded-lg overflow-hidden mb-4 transition-shadow duration-300 group-hover:shadow-lg w-[300px] h-[300px] mx-auto">
                         <Image
                           src={product.thumbnail || "/images/placeholder.jpg"}
                           alt={product.name}

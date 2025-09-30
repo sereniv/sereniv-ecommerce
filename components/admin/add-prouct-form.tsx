@@ -7,8 +7,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { DocumentIcon } from "@/components/icons";
 import ProductBasicDetails from "./product-basic-details";
+import ProductIngredientsDetails from "./product-ingredients-details";
+import ProductFaqDetails from "./product-faq-details";
 import ProductImagesDetails from "./product-images-details";
-import { Product } from "@/lib/types/product";
+import { Product, Variant, Cart, Faq, Ingredient } from "@/lib/types";
 import { ProductSchema } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 
@@ -19,21 +21,26 @@ interface FormStep {
   description: string;
 }
 
-export default function AddProjectForm() {
+export default function AddProductForm() {
   const { toast } = useToast();
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState<Product>({
+  const [formData, setFormData] = useState<Partial<Product>>({
     name: "",
     slug: "",
+    title: "",
     description: "",
     thumbnail: "",
     images: [],
-    price: 0,
-    weight: "",
-    stock: 0,
+    variants: [] as Variant[],
     isActive: true,
     isFeatured: false,
-  } as Product);
+    categories: [],
+    tags: [],
+    ingredients: [] as Ingredient[],
+    faqs: [] as Faq[],
+    frequentlyBoughtProducts: [],
+    relatedProducts: [],
+  });
 
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -51,15 +58,27 @@ export default function AddProjectForm() {
   const steps: FormStep[] = [
     {
       id: "basics",
-      title: "Prduct Details",
+      title: "Product Details",
       icon: <DocumentIcon />,
-      description: "Add all of your Product details",
+      description: "Add all of your product details",
     },
     {
-      id: "Product Images",
-      title: "All Product Images",
+      id: "ingredients",
+      title: "Product Ingredients",
       icon: <DocumentIcon />,
-      description: "Add all of your Product Images",
+      description: "Add all of your product ingredients details",
+    },
+    {
+      id: "faqs",
+      title: "Product Faqs",
+      icon: <DocumentIcon />,
+      description: "Add all of your product faqs details",
+    },
+    {
+      id: "product-images",
+      title: "Product Images",
+      icon: <DocumentIcon />,
+      description: "Add all of your product images",
     },
   ];
 
@@ -72,34 +91,35 @@ export default function AddProjectForm() {
 
     try {
       setFormSubmitting(true);
+      const { createdAt, updatedAt, carts, id, ...payload } = formData;
       const response = await fetch(`/api/admin/products`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create project");
+        throw new Error(errorData.message || "Failed to create product");
       }
 
       setFormSubmitted(true);
       toast({
-        title: "Project Created",
-        description: "Project has been successfully created.",
+        title: "Product Created",
+        description: "Product has been successfully created.",
       });
 
       router.push(`/admin/products`);
     } catch (error) {
-      console.error("Error creating project:", error);
+      console.error("Error creating product:", error);
       toast({
         title: "Error",
         description:
           error instanceof Error
             ? error.message
-            : "Failed to create project. Please try again.",
+            : "Failed to create product. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -107,18 +127,21 @@ export default function AddProjectForm() {
     }
   };
 
+  console.log("Form Data", formData);
+
   const validateProductDetails = () => {
     const result = ProductSchema.safeParse({
-      slug: formData.slug,
       name: formData.name,
+      slug: formData.slug,
       description: formData.description,
       thumbnail: formData.thumbnail,
       images: formData.images || [],
-      price: formData.price,
-      weight: formData.weight,
-      stock: formData.stock,
       isActive: formData.isActive,
       isFeatured: formData.isFeatured,
+      categories: formData.categories || [],
+      tags: formData.tags || [],
+      frequentlyBoughtProducts: formData.frequentlyBoughtProducts || [],
+      relatedProducts: formData.relatedProducts || [],
     });
 
     if (!result.success) {
@@ -129,7 +152,7 @@ export default function AddProjectForm() {
       console.log("Basic Details Errors", errors);
       return {
         isValid: false,
-        errors: errors,
+        errors,
       };
     }
 
@@ -158,12 +181,12 @@ export default function AddProjectForm() {
             .filter((msg) => msg)
             .join(", ");
           validationErrors.push(
-            "Project Details: " + (errorMessages || "Validation failed")
+            "Product Details: " + (errorMessages || "Validation failed")
           );
           const errorMessage =
             validationErrors.length === 1
               ? validationErrors[0]
-              : `Project Details:\n${validationErrors.join("\n")}`;
+              : `Product Details:\n${validationErrors.join("\n")}`;
           throw new Error(errorMessage);
         }
       }
@@ -254,7 +277,26 @@ export default function AddProjectForm() {
               )}
 
               {currentStep === 1 && (
+                <ProductIngredientsDetails
+                  // @ts-ignore
+                  formData={formData}
+                  setFormData={setFormData}
+                  formErrors={formErrors}
+                />
+              )}
+
+              {currentStep === 2 && (
+                <ProductFaqDetails
+                  // @ts-ignore
+                  formData={formData}
+                  setFormData={setFormData}
+                  formErrors={formErrors}
+                />
+              )}
+
+              {currentStep === 3 && (
                 <ProductImagesDetails
+                  // @ts-ignore
                   formData={formData}
                   setFormData={setFormData}
                 />
@@ -281,8 +323,8 @@ export default function AddProjectForm() {
                     {formSubmitting
                       ? "Submitting..."
                       : formSubmitted
-                      ? "Project Submitted"
-                      : "Submit Project"}
+                      ? "Product Submitted"
+                      : "Submit Product"}
                   </Button>
                 )}
               </div>

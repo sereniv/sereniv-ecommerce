@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui'
 import { FolderKanban, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { useUser } from '@/hooks/use-user'
 
 const adminCards = [
   {
@@ -95,25 +96,25 @@ function UnauthorizedAccess({ message }: { message: string }) {
 }
 
 export default function AdminPage() {
-  // const { user, isLoading } = useUser()
+  const { user, isLoading } = useUser()
   const router = useRouter()
-  const [isAdmin, setIsAdmin] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
 
-  // useEffect(() => {
-  //   if (!isLoading) {
-  //     if (!user) {
-  //       router.push('/login')
-  //     } else {
-  //       setIsAdmin(user.role === 'ADMIN')
-  //       setIsCheckingAuth(false)
-  //     }
-  //   }
-  // }, [user, isLoading, router])
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user) {
+        router.push('/login')
+      } else  {
+        setIsAdmin(user.role === 'ADMIN')
+        setIsCheckingAuth(false)
+      }
+    }
+  }, [user, isLoading, router])
 
-  // if (isLoading || isCheckingAuth) {
-  //   return <AdminPageSkeleton />
-  // }
+  if (isLoading || isCheckingAuth) {
+    return <AdminPageSkeleton />
+  }
 
   if (!isAdmin) {
     return <UnauthorizedAccess message="You do not have permission to access the admin panel." />

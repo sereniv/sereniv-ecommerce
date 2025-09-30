@@ -7,13 +7,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { DocumentIcon } from "@/components/icons";
 import ProductBasicDetails from "./product-basic-details";
+import ProductIngredientsDetails from "./product-ingredients-details";
+import ProductFaqDetails from "./product-faq-details";
 import ProductImagesDetails from "./product-images-details";
-import { Product } from "@/lib/types/product";
+import { Product, Variant, Ingredient, Faq } from "@/lib/types";
 import { ProductSchema } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 
 interface UpdateProjectFormProps {
-  slug : string;
+  slug: string;
   initialData: Product;
 }
 
@@ -25,26 +27,30 @@ interface FormStep {
 }
 
 export default function UpdateProjectForm({
-  slug ,
+  slug,
   initialData,
 }: UpdateProjectFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState<Product>(
-    initialData ||
-      ({
-        name: "",
-        slug: "",
-        description: "",
-        thumbnail: "",
-        images: [],
-        price: 0,
-        weight: "",
-        stock: 0,
-        isActive: true,
-        isFeatured: false,
-      } as Product)
+  const [formData, setFormData] = useState<Partial<Product>>(
+    initialData || {
+      name: "",
+      slug: "",
+      title: "",
+      description: "",
+      thumbnail: "",
+      images: [],
+      variants: [] as Variant[],
+      isActive: true,
+      isFeatured: false,
+      categories: [],
+      tags: [],
+      ingredients: [] as Ingredient[],
+      faqs: [] as Faq[],
+      frequentlyBoughtProducts: [],
+      relatedProducts: [],
+    }
   );
   const [mounted, setMounted] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -61,15 +67,27 @@ export default function UpdateProjectForm({
   const steps: FormStep[] = [
     {
       id: "basics",
-      title: "Prduct Details",
+      title: "Product Details",
       icon: <DocumentIcon />,
-      description: "Add all of your Product details",
+      description: "Add all of your product details",
     },
     {
-      id: "Product Images",
-      title: "All Product Images",
+      id: "ingredients",
+      title: "Product Ingredients",
       icon: <DocumentIcon />,
-      description: "Add all of your Product Images",
+      description: "Add all of your product ingredients details",
+    },
+    {
+      id: "faqs",
+      title: "Product Faqs",
+      icon: <DocumentIcon />,
+      description: "Add all of your product faqs details",
+    },
+    {
+      id: "product-images",
+      title: "Product Images",
+      icon: <DocumentIcon />,
+      description: "Add all of your product images",
     },
   ];
 
@@ -100,7 +118,7 @@ export default function UpdateProjectForm({
         title: "Project Updated",
         description: "Project has been successfully updated.",
       });
-     router.push(`/admin/products`);
+      router.push(`/admin/products`);
     } catch (error) {
       console.error("Error updating project:", error);
       toast({
@@ -118,16 +136,17 @@ export default function UpdateProjectForm({
 
   const validateProductDetails = () => {
     const result = ProductSchema.safeParse({
-      slug: formData.slug,
       name: formData.name,
+      slug: formData.slug,
       description: formData.description,
       thumbnail: formData.thumbnail,
       images: formData.images || [],
-      price: formData.price,
-      weight: formData.weight,
-      stock: formData.stock,
       isActive: formData.isActive,
       isFeatured: formData.isFeatured,
+      categories: formData.categories || [],
+      tags: formData.tags || [],
+      frequentlyBoughtProducts: formData.frequentlyBoughtProducts || [],
+      relatedProducts: formData.relatedProducts || [],
     });
 
     if (!result.success) {
@@ -138,7 +157,7 @@ export default function UpdateProjectForm({
       console.log("Basic Details Errors", errors);
       return {
         isValid: false,
-        errors: errors,
+        errors,
       };
     }
 
@@ -263,7 +282,26 @@ export default function UpdateProjectForm({
               )}
 
               {currentStep === 1 && (
+                <ProductIngredientsDetails
+                  // @ts-ignore
+                  formData={formData}
+                  setFormData={setFormData}
+                  formErrors={formErrors}
+                />
+              )}
+
+              {currentStep === 2 && (
+                <ProductFaqDetails
+                  // @ts-ignore
+                  formData={formData}
+                  setFormData={setFormData}
+                  formErrors={formErrors}
+                />
+              )}
+
+              {currentStep === 1 && (
                 <ProductImagesDetails
+                  // @ts-ignore
                   formData={formData}
                   setFormData={setFormData}
                 />

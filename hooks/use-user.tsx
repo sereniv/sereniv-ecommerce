@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { getApiUrl } from "@/lib/utils";
-import { User } from "@prisma/client";
+import { User } from "@/lib/types";
 
 export const useUser = () => {
   const router = useRouter();
