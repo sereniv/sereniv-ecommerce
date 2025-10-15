@@ -54,8 +54,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Images, categories, tags, frequentlyBoughtProducts, and relatedProducts must be arrays" }, { status: 400 });
     }
 
-    if (!Array.isArray(variants)) {
-      return NextResponse.json({ error: "Variants must be an array" }, { status: 400 });
+    if (!Array.isArray(variants) || variants.length === 0) {
+      return NextResponse.json({ error: "Variants must be an array with at least one variant" }, { status: 400 });
     }
     for (const variant of variants) {
       if (!variant.size || !variant.price || typeof variant.stock !== "number") {

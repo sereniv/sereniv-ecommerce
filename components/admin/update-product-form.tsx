@@ -299,7 +299,7 @@ export default function UpdateProjectForm({
                 />
               )}
 
-              {currentStep === 1 && (
+              {currentStep === 3 && (
                 <ProductImagesDetails
                   // @ts-ignore
                   formData={formData}

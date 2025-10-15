@@ -3,7 +3,7 @@
 import UpdateProductForm from "@/components/admin/update-product-form";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Product , Variant , Ingredient , Faq } from "@/lib/types";
+import { Product, Variant, Ingredient, Faq } from "@/lib/types";
 import { FormShimmer } from "@/components/ui/shimmer";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -16,24 +16,7 @@ export default function AdminProductUpdatePage() {
   }
 
   const slug = params.slug as string;
-
- const [product , setProduct] = useState<Partial<Product>>({
-     name: "",
-     slug: "",
-     title: "",
-     description: "",
-     thumbnail: "",
-     images: [],
-     variants: [] as Variant[],
-     isActive: true,
-     isFeatured: false,
-     categories: [],
-     tags: [],
-     ingredients: [] as Ingredient[],
-     faqs: [] as Faq[],
-     frequentlyBoughtProducts: [],
-     relatedProducts: [],
-   });
+  const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

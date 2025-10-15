@@ -81,8 +81,8 @@ export async function PUT(
     }
 
     // Validate variants
-    if (!Array.isArray(variants)) {
-      return NextResponse.json({ error: "Variants must be an array" }, { status: 400 });
+    if (!Array.isArray(variants) || variants.length === 0) {
+      return NextResponse.json({ error: "Variants must be an array and always have at least one variant" }, { status: 400 });
     }
     for (const variant of variants) {
       if ((variant.id && typeof variant.id !== "string") || !variant.size || typeof variant.price !== "number" || typeof variant.stock !== "number") {
@@ -139,82 +139,61 @@ export async function PUT(
       }
     }
 
-    const updateData: any = {
-      name,
-      slug,
-      title,
-      description,
-      thumbnail,
-      images,
-      categories,
-      tags,
-      frequentlyBoughtProducts,
-      relatedProducts,
-      isFeatured,
-      isActive,
-    };
+    const updateData: any = {};
+    
+    if (name !== undefined) updateData.name = name;
+    if (slug !== undefined) updateData.slug = slug;
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
+    if (images !== undefined) updateData.images = images;
+    if (categories !== undefined) updateData.categories = categories;
+    if (tags !== undefined) updateData.tags = tags;
+    if (frequentlyBoughtProducts !== undefined) updateData.frequentlyBoughtProducts = frequentlyBoughtProducts;
+    if (relatedProducts !== undefined) updateData.relatedProducts = relatedProducts;
+    if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
+    if (isActive !== undefined) updateData.isActive = isActive;
 
-    if (variants.length > 0) {
+    if (variants.length >= 0) {
       updateData.variants = {
-        deleteMany: { id: { notIn: variants.filter(v => v.id).map(v => v.id) } },
-        upsert: variants.map(variant => ({
-          where: { id: variant.id || "" },
-          update: {
-            size: variant.size,
-            price: variant.price,
-            stock: variant.stock,
-            discount: variant.discount,
-          },
-          create: {
-            size: variant.size,
-            price: variant.price,
-            stock: variant.stock,
-            discount: variant.discount,
-          },
+        deleteMany: {},
+        create: variants.map(variant => ({
+          size: variant.size,
+          price: variant.price,
+          stock: variant.stock,
+          discount: variant.discount,
         })),
       };
     }
 
-    // Handle ingredients: Update existing, create new, delete missing
-    if (ingredients.length > 0) {
+    if (ingredients.length >= 0) {
       updateData.ingredients = {
-        deleteMany: { id: { notIn: ingredients.filter(i => i.id).map(i => i.id) } },
-        upsert: ingredients.map(ingredient => ({
-          where: { id: ingredient.id || "" },
-          update: {
-            name: ingredient.name,
-            description: ingredient.description,
-          },
-          create: {
-            name: ingredient.name,
-            description: ingredient.description,
-          },
+        deleteMany: {},
+        create: ingredients.map(ingredient => ({
+          name: ingredient.name,
+          description: ingredient.description,
         })),
       };
     }
 
-    // Handle FAQs: Update existing, create new, delete missing
-    if (faqs.length > 0) {
+    if (faqs.length >= 0) {
       updateData.faqs = {
-        deleteMany: { id: { notIn: faqs.filter(f => f.id).map(f => f.id) } },
-        upsert: faqs.map(faq => ({
-          where: { id: faq.id || "" },
-          update: {
-            question: faq.question,
-            answer: faq.answer,
-          },
-          create: {
-            question: faq.question,
-            answer: faq.answer,
-          },
+        deleteMany: {},
+        create: faqs.map(faq => ({
+          question: faq.question,
+          answer: faq.answer,
         })),
       };
     }
 
-    // Update product
     const updatedProduct = await prisma.product.update({
       where: { slug: params.slug },
       data: updateData,
+      include: {
+        variants: true,
+        ingredients: true,
+        faqs: true,
+      },
     });
 
     return NextResponse.json(updatedProduct, { status: 200 });
@@ -226,6 +205,7 @@ export async function PUT(
     );
   }
 }
+
 export async function DELETE(
   req: Request,
   { params }: { params: { slug: string } }
