@@ -17,8 +17,8 @@ function ProductBasicDetails({
   setFormData,
   formErrors,
 }: {
-  formData: Partial<Product>;
-  setFormData: (formData: Partial<Product>) => void;
+  formData: Product;
+  setFormData: (formData: Product) => void;
   formErrors: { [key: string]: string };
 }) {
   const { toast } = useToast();
@@ -32,8 +32,8 @@ function ProductBasicDetails({
   const addVariant = () => {
     const newVariant: Variant = {
       size: "",
-      price: "", 
-      stock: "", 
+      price: "",
+      stock: "",
       discount: "",
     };
     const newIndex = (formData.variants || []).length;

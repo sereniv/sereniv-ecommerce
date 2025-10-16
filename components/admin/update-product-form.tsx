@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { DocumentIcon } from "@/components/icons";
 import ProductBasicDetails from "./product-basic-details";
 import ProductIngredientsDetails from "./product-ingredients-details";
 import ProductFaqDetails from "./product-faq-details";
@@ -13,8 +12,9 @@ import ProductImagesDetails from "./product-images-details";
 import { Product, Variant, Ingredient, Faq } from "@/lib/types";
 import { ProductSchema } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
+import { Package, Leaf, HelpCircle, Image, Check } from "lucide-react";
 
-interface UpdateProjectFormProps {
+interface UpdateProductFormProps {
   slug: string;
   initialData: Product;
 }
@@ -26,14 +26,14 @@ interface FormStep {
   description: string;
 }
 
-export default function UpdateProjectForm({
+export default function UpdateProductForm({
   slug,
   initialData,
-}: UpdateProjectFormProps) {
+}: UpdateProductFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState<Partial<Product>>(
+  const [formData, setFormData] = useState<Product>(
     initialData || {
       name: "",
       slug: "",
@@ -60,6 +60,8 @@ export default function UpdateProjectForm({
   }>({
     0: false,
     1: false,
+    2: false,
+    3: false,
   });
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -68,26 +70,26 @@ export default function UpdateProjectForm({
     {
       id: "basics",
       title: "Product Details",
-      icon: <DocumentIcon />,
-      description: "Add all of your product details",
+      icon: <Package className="w-5 h-5" />,
+      description: "Update your product details",
     },
     {
       id: "ingredients",
       title: "Product Ingredients",
-      icon: <DocumentIcon />,
-      description: "Add all of your product ingredients details",
+      icon: <Leaf className="w-5 h-5" />,
+      description: "Update your product ingredients details",
     },
     {
       id: "faqs",
-      title: "Product Faqs",
-      icon: <DocumentIcon />,
-      description: "Add all of your product faqs details",
+      title: "Product FAQs",
+      icon: <HelpCircle className="w-5 h-5" />,
+      description: "Update your product FAQs details",
     },
     {
       id: "product-images",
       title: "Product Images",
-      icon: <DocumentIcon />,
-      description: "Add all of your product images",
+      icon: <Image className="w-5 h-5" />,
+      description: "Update your product images",
     },
   ];
 
@@ -100,33 +102,34 @@ export default function UpdateProjectForm({
 
     try {
       setFormSubmitting(true);
+      const { createdAt, updatedAt, carts, id, ...payload } = formData;
       const response = await fetch(`/api/admin/products/${slug}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update project");
+        throw new Error(errorData.message || "Failed to update product");
       }
 
       setFormSubmitted(true);
       toast({
-        title: "Project Updated",
-        description: "Project has been successfully updated.",
+        title: "Product Updated",
+        description: "Product has been successfully updated.",
       });
       router.push(`/admin/products`);
     } catch (error) {
-      console.error("Error updating project:", error);
+      console.error("Error updating product:", error);
       toast({
         title: "Error",
         description:
           error instanceof Error
             ? error.message
-            : "Failed to update project. Please try again.",
+            : "Failed to update product. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -154,7 +157,6 @@ export default function UpdateProjectForm({
       result.error.errors.forEach((error) => {
         errors[error.path.join(".")] = error.message;
       });
-      console.log("Basic Details Errors", errors);
       return {
         isValid: false,
         errors,
@@ -186,12 +188,12 @@ export default function UpdateProjectForm({
             .filter((msg) => msg)
             .join(", ");
           validationErrors.push(
-            "Project Details: " + (errorMessages || "Validation failed")
+            "Product Details: " + (errorMessages || "Validation failed")
           );
           const errorMessage =
             validationErrors.length === 1
               ? validationErrors[0]
-              : `Project Details:\n${validationErrors.join("\n")}`;
+              : `Product Details:\n${validationErrors.join("\n")}`;
           throw new Error(errorMessage);
         }
       }
@@ -222,121 +224,215 @@ export default function UpdateProjectForm({
     }, 0);
   };
 
+  if (!mounted) return null;
+
   return (
-    <>
-      <div className="lg:col-span-3">
-        <Card className="sticky top-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Steps</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <nav className="flex flex-col">
+    <div className="bg-white min-h-screen">
+      {/* Header */}
+      <div className="py-4">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between border-b py-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Update Product
+              </h1>
+              <p className="text-gray-600">
+                Modify the details to update the product
+              </p>
+            </div>
+            {/* Progress Indicator */}
+            <div className="hidden md:flex items-center gap-2">
               {steps.map((step, index) => (
-                <button
-                  key={step.id}
-                  className={cn(
-                    "flex items-center gap-3 px-6 py-4 hover:bg-muted transition-colors text-left border-l-2",
-                    currentStep === index
-                      ? "border-l-primary font-medium bg-muted/50"
-                      : "border-l-transparent"
-                  )}
-                  onClick={() => setCurrentStep(index)}
-                >
+                <div key={step.id} className="flex items-center">
                   <div
                     className={cn(
-                      "w-8 h-8 flex items-center justify-center rounded-full bg-muted-foreground/10",
-                      currentStep === index && "bg-primary/10 text-primary"
+                      "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
+                      index < currentStep
+                        ? "bg-green-100 text-green-700"
+                        : index === currentStep
+                        ? "bg-gray-900 text-white"
+                        : "bg-gray-100 text-gray-400"
                     )}
+                    aria-current={index === currentStep ? "step" : undefined}
                   >
-                    {step.icon}
+                    {index < currentStep ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      index + 1
+                    )}
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={cn(
+                        "w-12 h-0.5 mx-1",
+                        index < currentStep ? "bg-green-200" : "bg-gray-200"
+                      )}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Sidebar Steps */}
+          <div className="lg:col-span-3">
+            <Card className="sticky top-6 border-2 border-gray-200">
+              <CardHeader className="border-b bg-gray-50">
+                <CardTitle className="text-lg font-bold text-gray-900">
+                  Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <nav className="flex flex-col">
+                  {steps.map((step, index) => (
+                    <button
+                      key={step.id}
+                      type="button"
+                      className={cn(
+                        "flex items-start gap-3 px-4 py-4 hover:bg-gray-50 transition-colors text-left border-l-4",
+                        currentStep === index
+                          ? "border-l-gray-900 bg-gray-50"
+                          : index < currentStep
+                          ? "border-l-green-500"
+                          : "border-l-transparent"
+                      )}
+                      onClick={() => setCurrentStep(index)}
+                      aria-label={`Go to ${step.title} step`}
+                      aria-current={currentStep === index ? "step" : undefined}
+                    >
+                      <div
+                        className={cn(
+                          "w-10 h-10 flex items-center justify-center rounded-lg transition-colors flex-shrink-0",
+                          currentStep === index
+                            ? "bg-gray-900 text-white"
+                            : index < currentStep
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-400"
+                        )}
+                      >
+                        {index < currentStep ? (
+                          <Check className="w-5 h-5" />
+                        ) : (
+                          step.icon
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div
+                          className={cn(
+                            "font-semibold text-sm mb-1",
+                            currentStep === index
+                              ? "text-gray-900"
+                              : "text-gray-600"
+                          )}
+                        >
+                          {step.title}
+                        </div>
+                        <div className="text-xs text-gray-500 leading-tight">
+                          {step.description}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </nav>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Form */}
+          <div className="lg:col-span-9">
+            <Card className="border-2 border-gray-200">
+              <CardHeader className="border-b bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gray-900 text-white flex items-center justify-center">
+                    {steps[currentStep].icon}
                   </div>
                   <div>
-                    <div className="font-medium">{step.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {step.description}
-                    </div>
+                    <CardTitle className="text-xl font-bold text-gray-900">
+                      {steps[currentStep].title}
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {steps[currentStep].description}
+                    </p>
                   </div>
-                </button>
-              ))}
-            </nav>
-          </CardContent>
-        </Card>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <form onSubmit={handleSubmit}>
+                  {currentStep === 0 && (
+                    <ProductBasicDetails
+                      formData={formData}
+                      setFormData={setFormData}
+                      formErrors={formErrors}
+                    />
+                  )}
+
+                  {currentStep === 1 && (
+                    <ProductIngredientsDetails
+                      formData={formData}
+                      setFormData={setFormData}
+                      formErrors={formErrors}
+                    />
+                  )}
+
+                  {currentStep === 2 && (
+                    <ProductFaqDetails
+                      formData={formData}
+                      setFormData={setFormData}
+                      formErrors={formErrors}
+                    />
+                  )}
+
+                  {currentStep === 3 && (
+                    <ProductImagesDetails
+                      formData={formData}
+                      setFormData={setFormData}
+                    />
+                  )}
+
+                  {/* Navigation Buttons */}
+                  <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={prevStep}
+                      disabled={currentStep === 0}
+                      className="border-2 border-gray-200 hover:border-gray-900 hover:bg-gray-50 rounded-lg px-6 h-12 font-medium"
+                    >
+                      Back
+                    </Button>
+                    {currentStep < steps.length - 1 ? (
+                      <Button
+                        type="button"
+                        onClick={nextStep}
+                        className="bg-gray-900 hover:bg-black text-white rounded-lg px-8 h-12 font-medium"
+                      >
+                        Continue
+                      </Button>
+                    ) : (
+                      <Button
+                        type="submit"
+                        disabled={formSubmitting || formSubmitted}
+                        className="bg-gray-900 hover:bg-black text-white rounded-lg px-8 h-12 font-medium disabled:bg-gray-400"
+                      >
+                        {formSubmitting
+                          ? "Submitting..."
+                          : formSubmitted
+                          ? "Product Updated"
+                          : "Update Product"}
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
-
-      {/* Main Form Content */}
-      <div className="lg:col-span-8">
-        <Card>
-          <CardHeader className="border-b bg-muted/30">
-            <CardTitle className="text-2xl font-semibold">
-              {steps[currentStep].title}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <form onSubmit={handleSubmit}>
-              {currentStep === 0 && (
-                <ProductBasicDetails
-                  formData={formData}
-                  setFormData={setFormData}
-                  formErrors={formErrors}
-                />
-              )}
-
-              {currentStep === 1 && (
-                <ProductIngredientsDetails
-                  // @ts-ignore
-                  formData={formData}
-                  setFormData={setFormData}
-                  formErrors={formErrors}
-                />
-              )}
-
-              {currentStep === 2 && (
-                <ProductFaqDetails
-                  // @ts-ignore
-                  formData={formData}
-                  setFormData={setFormData}
-                  formErrors={formErrors}
-                />
-              )}
-
-              {currentStep === 3 && (
-                <ProductImagesDetails
-                  // @ts-ignore
-                  formData={formData}
-                  setFormData={setFormData}
-                />
-              )}
-
-              <div className="flex justify-between mt-8">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 0}
-                >
-                  Back
-                </Button>
-                {currentStep < steps.length - 1 ? (
-                  <Button type="button" onClick={nextStep}>
-                    Continue
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    disabled={formSubmitting || formSubmitted}
-                  >
-                    {formSubmitting
-                      ? "Submitting..."
-                      : formSubmitted
-                      ? "Project Submitted"
-                      : "Update Project"}
-                  </Button>
-                )}
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+    </div>
   );
 }

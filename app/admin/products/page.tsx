@@ -237,10 +237,10 @@ export default function ProductsAdminPage() {
               <div className="space-y-4">
                 {products.map((product) => {
                   const minPrice = product.variants && product.variants.length > 0 
-                    ? Math.min(...product.variants.map((v) => v.price))
+                    ? Math.min(...product.variants.map((v) => Number(v.price)))
                     : 0;
                   const totalStock = product.variants && product.variants.length > 0
-                    ? product.variants.reduce((sum, v) => sum + v.stock, 0)
+                    ? product.variants.reduce((sum, v) => sum + Number(v.stock), 0)
                     : 0;
 
                   return (

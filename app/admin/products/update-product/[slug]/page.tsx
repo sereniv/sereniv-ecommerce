@@ -60,13 +60,11 @@ export default function AdminProductUpdatePage() {
 
   return (
     <div className="container px-4 py-6 mx-auto max-w-7xl">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {loading ? (
-          <FormShimmer />
-        ) : (
-          <UpdateProductForm slug={slug} initialData={product} />
-        )}
-      </div>
+      {loading ? (
+        <FormShimmer />
+      ) : (
+        <UpdateProductForm slug={slug} initialData={product} />
+      )}
     </div>
   );
 }
