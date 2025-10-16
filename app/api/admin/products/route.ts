@@ -16,6 +16,9 @@ export async function GET(request: Request) {
           },
         }),
       },
+      include: {
+        variants: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -24,6 +27,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
   }
 }
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
