@@ -45,7 +45,7 @@ export default function Header() {
 
   // Prevent hydration mismatch by not rendering scroll-dependent styles until mounted
   const headerClassName = cn(
-    "sticky top-0 z-50 w-full transition-all duration-300 safe-area-top",
+    "sticky top-0 z-50 w-full transition-all duration-300 safe-area-top border-b",
     mounted && scrolled ? "bg-white/80 backdrop-blur-lg shadow-md" : "bg-white"
   );
 
