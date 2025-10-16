@@ -14,9 +14,7 @@ export default function AdminAddProductPage() {
 
   return (
     <div className="container px-4 py-6 mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <AddProductForm />
-      </div>
+      <AddProductForm />
     </div>
   );
 }

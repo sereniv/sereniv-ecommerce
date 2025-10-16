@@ -44,12 +44,13 @@ export interface Variant {
   product?: Product;
   productId?: string;
   size: string;
-  price: number;
-  stock: number;
-  discount?: number | null;
+  price: number | string;
+  stock: number | string;
+  discount?: number | string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
+
 
 export interface Ingredient {
   id?: string;

@@ -9,7 +9,7 @@ import { Product, Variant } from "@/lib/types";
 import { slugify } from "@/lib/utils";
 import RichTextEditor from "../rich-text-editor";
 import ImageUpload from "../image-upload";
-import { Trash, Save, Edit, X, Plus } from "lucide-react";
+import { Trash, Save, Edit, X, Plus, Package } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 function ProductBasicDetails({
@@ -32,9 +32,9 @@ function ProductBasicDetails({
   const addVariant = () => {
     const newVariant: Variant = {
       size: "",
-      price: 0,
-      stock: 0,
-      discount: 0,
+      price: "", 
+      stock: "", 
+      discount: "",
     };
     const newIndex = (formData.variants || []).length;
     setFormData({
@@ -44,7 +44,6 @@ function ProductBasicDetails({
     setEditingVariantIndex(newIndex);
     setTempVariant(newVariant);
   };
-
   const startEditVariant = (index: number) => {
     setEditingVariantIndex(index);
     setTempVariant({ ...(formData.variants?.[index] || {}) } as Variant);
@@ -55,41 +54,67 @@ function ProductBasicDetails({
 
     if (!tempVariant.size || !tempVariant.size.trim()) {
       toast({
-        title: "Variant size is required",
-        description: "Please enter a valid variant size",
+        title: "Validation Error",
+        description: "Variant size is required",
         variant: "destructive",
       });
       return;
     }
-    if (tempVariant.price <= 0) {
+
+    const price = tempVariant.price === "" ? 0 : Number(tempVariant.price);
+    if (isNaN(price) || price <= 0) {
       toast({
-        title: "Variant price is required",
-        description: "Please enter a valid variant price",
+        title: "Validation Error",
+        description: "Variant price must be greater than 0",
         variant: "destructive",
       });
       return;
     }
-    if (tempVariant.stock < 0) {
+
+    const stock = tempVariant.stock === "" ? 0 : Number(tempVariant.stock);
+    if (isNaN(stock) || stock < 0) {
       toast({
-        title: "Variant stock is required",
-        description: "Please enter a valid variant stock",
+        title: "Validation Error",
+        description: "Variant stock cannot be negative",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const discount =
+      tempVariant.discount === "" ? 0 : Number(tempVariant.discount);
+    if (isNaN(discount) || discount < 0 || discount > 100) {
+      toast({
+        title: "Validation Error",
+        description: "Variant discount must be between 0 and 100",
         variant: "destructive",
       });
       return;
     }
 
     const updatedVariants = [...(formData.variants || [])];
-    updatedVariants[index] = tempVariant;
+    updatedVariants[index] = {
+      ...tempVariant,
+      price,
+      stock,
+      discount,
+    };
     setFormData({
       ...formData,
       variants: updatedVariants,
     });
     setEditingVariantIndex(null);
     setTempVariant(null);
+
+    toast({
+      title: "Success",
+      description: "Variant saved successfully",
+    });
   };
 
   const cancelEditVariant = (index: number) => {
-    if (formData.variants?.[index] && !formData.variants[index].size) {
+    const variant = formData.variants?.[index];
+    if (!variant || !variant.size) {
       removeVariant(index);
     }
     setEditingVariantIndex(null);
@@ -98,7 +123,28 @@ function ProductBasicDetails({
 
   const updateTempVariant = (updatedFields: Partial<Variant>) => {
     if (!tempVariant) return;
-    setTempVariant({ ...tempVariant, ...updatedFields });
+    setTempVariant({
+      ...tempVariant,
+      ...updatedFields,
+      price:
+        updatedFields.price !== undefined
+          ? updatedFields.price === ""
+            ? ""
+            : Number(updatedFields.price)
+          : tempVariant.price,
+      stock:
+        updatedFields.stock !== undefined
+          ? updatedFields.stock === ""
+            ? ""
+            : Number(updatedFields.stock)
+          : tempVariant.stock,
+      discount:
+        updatedFields.discount !== undefined
+          ? updatedFields.discount === ""
+            ? ""
+            : Number(updatedFields.discount)
+          : tempVariant.discount,
+    });
   };
 
   const removeVariant = (index: number) => {
@@ -119,8 +165,8 @@ function ProductBasicDetails({
     const trimmedCategory = categoryInput.trim();
     if (!trimmedCategory) {
       toast({
-        title: "Category cannot be empty",
-        description: "Please enter a valid category name",
+        title: "Validation Error",
+        description: "Category cannot be empty",
         variant: "destructive",
       });
       return;
@@ -129,7 +175,7 @@ function ProductBasicDetails({
     const currentCategories = formData.categories || [];
     if (currentCategories.includes(trimmedCategory)) {
       toast({
-        title: "Duplicate category",
+        title: "Duplicate Entry",
         description: "This category has already been added",
         variant: "destructive",
       });
@@ -156,8 +202,8 @@ function ProductBasicDetails({
     const trimmedTag = tagInput.trim();
     if (!trimmedTag) {
       toast({
-        title: "Tag cannot be empty",
-        description: "Please enter a valid tag name",
+        title: "Validation Error",
+        description: "Tag cannot be empty",
         variant: "destructive",
       });
       return;
@@ -166,7 +212,7 @@ function ProductBasicDetails({
     const currentTags = formData.tags || [];
     if (currentTags.includes(trimmedTag)) {
       toast({
-        title: "Duplicate tag",
+        title: "Duplicate Entry",
         description: "This tag has already been added",
         variant: "destructive",
       });
@@ -209,239 +255,267 @@ function ProductBasicDetails({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <div className="space-y-6">
-          <div>
-            <label htmlFor="name" className="text-gray-600 font-semibold">
-              Name <span className="text-red-600">*</span>
-            </label>
-            <Input
-              id="name"
-              required
-              placeholder="Enter product name"
-              value={formData.name ?? ""}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  name: e.target.value,
-                  slug: slugify(e.target.value),
-                })
-              }
-              className={cn(
-                "h-10 border-gray-200 rounded-lg focus-visible:ring-gray-900",
-                formErrors.name && "border-red-600 focus-visible:ring-red-600"
-              )}
-            />
-            {formErrors.name && (
-              <p className="text-sm text-red-600 mt-1">{formErrors.name}</p>
+      {/* Basic Information */}
+      <div className="space-y-6">
+        <div>
+          <label
+            htmlFor="name"
+            className="block text-sm font-semibold text-gray-900 mb-2"
+          >
+            Product Name <span className="text-red-600">*</span>
+          </label>
+          <Input
+            id="name"
+            required
+            placeholder="e.g., Salicylic Acid + LHA 2% Cleanser"
+            value={formData.name ?? ""}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                name: e.target.value,
+                slug: slugify(e.target.value),
+              })
+            }
+            className={cn(
+              "h-12 border-2 border-gray-200 rounded-lg focus-visible:ring-gray-900",
+              formErrors.name && "border-red-600 focus-visible:ring-red-600"
             )}
-          </div>
+          />
+          {formErrors.name && (
+            <p className="text-sm text-red-600 mt-1">{formErrors.name}</p>
+          )}
+        </div>
 
-          <div>
-            <label htmlFor="title" className="text-gray-600 font-semibold">
-              Title
-            </label>
-            <Input
-              id="title"
-              placeholder="Enter product title"
-              value={formData.title ?? ""}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  title: e.target.value,
-                })
-              }
-              className={cn(
-                "h-10 border-gray-200 rounded-lg focus-visible:ring-gray-900",
-                formErrors.title && "border-red-600 focus-visible:ring-red-600"
-              )}
-            />
-            {formErrors.title && (
-              <p className="text-sm text-red-600 mt-1">{formErrors.title}</p>
+        <div>
+          <label
+            htmlFor="title"
+            className="block text-sm font-semibold text-gray-900 mb-2"
+          >
+            Product Title
+          </label>
+          <Input
+            id="title"
+            placeholder="e.g., Reduces Sebum & Prevents Breakout"
+            value={formData.title ?? ""}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                title: e.target.value,
+              })
+            }
+            className={cn(
+              "h-12 border-2 border-gray-200 rounded-lg focus-visible:ring-gray-900",
+              formErrors.title && "border-red-600 focus-visible:ring-red-600"
             )}
-          </div>
+          />
+          {formErrors.title && (
+            <p className="text-sm text-red-600 mt-1">{formErrors.title}</p>
+          )}
+        </div>
 
-          <div>
-            <label
-              htmlFor="description"
-              className="text-gray-600 font-semibold"
-            >
-              Description
-            </label>
-            <RichTextEditor
-              value={formData.description ?? ""}
-              onChange={(value: string) =>
-                setFormData({ ...formData, description: value })
-              }
-              placeholder="Enter product description"
-              minWords={15}
-              maxWords={500}
-              className="min-h-[100px] border-gray-200 rounded-lg focus-visible:ring-gray-900"
-            />
-            {formErrors.description && (
-              <p className="text-sm text-red-600 mt-1">
-                {formErrors.description}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="text-gray-600 font-semibold">
-              Upload Thumbnail
-            </label>
-            <p className="text-xs text-gray-600 mt-1 mb-4">
-              Recommended size: 1200 × 630 pixels (PNG, JPEG, SVG are supported)
+        <div>
+          <label
+            htmlFor="description"
+            className="block text-sm font-semibold text-gray-900 mb-2"
+          >
+            Description
+          </label>
+          <RichTextEditor
+            value={formData.description ?? ""}
+            onChange={(value: string) =>
+              setFormData({ ...formData, description: value })
+            }
+            placeholder="Enter product description"
+            minWords={15}
+            maxWords={500}
+            className="min-h-[150px] border-2 border-gray-200 rounded-lg focus-visible:ring-gray-900"
+          />
+          {formErrors.description && (
+            <p className="text-sm text-red-600 mt-1">
+              {formErrors.description}
             </p>
-            <ImageUpload
-              value={formData.thumbnail || ""}
-              onChange={(value) =>
-                setFormData({
-                  ...formData,
-                  thumbnail: value,
-                })
-              }
-              disabled={false}
-              className="border-gray-200 rounded-lg"
-            />
-            {formErrors.thumbnail && (
-              <p className="text-sm text-red-600 mt-1">
-                {formErrors.thumbnail}
-              </p>
-            )}
-          </div>
+          )}
+        </div>
 
-          <div>
-            <label htmlFor="categories" className="text-gray-600 font-semibold">
-              Categories
-            </label>
-            <p className="text-xs text-gray-600 mt-1 mb-2">
-              Add categories to organize your product
-            </p>
-            <div className="flex gap-2">
-              <Input
-                id="categories"
-                placeholder="Enter category name"
-                value={categoryInput}
-                onChange={(e) => setCategoryInput(e.target.value)}
-                onKeyDown={handleCategoryKeyDown}
-                className="h-10 border-gray-200 rounded-lg focus-visible:ring-gray-900"
-              />
-              <Button
-                type="button"
-                onClick={addCategory}
-                className="h-10"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add
-              </Button>
-            </div>
-            {formErrors.categories && (
-              <p className="text-sm text-red-600 mt-1">
-                {formErrors.categories}
-              </p>
-            )}
-            {formData.categories && formData.categories.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {formData.categories.map((category, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full text-sm"
-                  >
-                    <span>{category}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeCategory(category)}
-                      className="hover:bg-blue-200 rounded-full p-0.5"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-900 mb-2">
+            Product Thumbnail
+          </label>
+          <p className="text-xs text-gray-600 mb-3">
+            Recommended size: 1200 × 630 pixels (PNG, JPEG, SVG)
+          </p>
+          <ImageUpload
+            value={formData.thumbnail || ""}
+            onChange={(value) =>
+              setFormData({
+                ...formData,
+                thumbnail: value,
+              })
+            }
+            disabled={false}
+            className="border-2 border-gray-200 rounded-lg"
+          />
+          {formErrors.thumbnail && (
+            <p className="text-sm text-red-600 mt-1">{formErrors.thumbnail}</p>
+          )}
+        </div>
+      </div>
 
-          <div>
-            <label htmlFor="tags" className="text-gray-600 font-semibold">
-              Tags
-            </label>
-            <p className="text-xs text-gray-600 mt-1 mb-2">
-              Add tags to help customers find your product
-            </p>
-            <div className="flex gap-2">
-              <Input
-                id="tags"
-                placeholder="Enter tag name"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleTagKeyDown}
-                className="h-10 border-gray-200 rounded-lg focus-visible:ring-gray-900"
-              />
-              <Button
-                type="button"
-                onClick={addTag}
-                className="h-10"
+      {/* Categories */}
+      <div className="border-t-2 border-gray-100 pt-6">
+        <label
+          htmlFor="categories"
+          className="block text-sm font-semibold text-gray-900 mb-2"
+        >
+          Categories
+        </label>
+        <p className="text-xs text-gray-600 mb-3">
+          Add categories to organize your product
+        </p>
+        <div className="flex gap-2">
+          <Input
+            id="categories"
+            placeholder="e.g., Fragrance free, Non-comedogenic"
+            value={categoryInput}
+            onChange={(e) => setCategoryInput(e.target.value)}
+            onKeyDown={handleCategoryKeyDown}
+            className="h-12 border-2 border-gray-200 rounded-lg focus-visible:ring-gray-900"
+          />
+          <Button
+            type="button"
+            onClick={addCategory}
+            className="h-12 px-6 bg-gray-900 hover:bg-black rounded-lg"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add
+          </Button>
+        </div>
+        {formData.categories && formData.categories.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {formData.categories.map((category, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium border border-blue-200"
               >
-                <Plus className="h-4 w-4 mr-1" />
-                Add
-              </Button>
-            </div>
-            {formErrors.tags && (
-              <p className="text-sm text-red-600 mt-1">{formErrors.tags}</p>
-            )}
-            {formData.tags && formData.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {formData.tags.map((tag, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1.5 rounded-full text-sm"
-                  >
-                    <span>{tag}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="hover:bg-green-200 rounded-full p-0.5"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <div className="flex justify-between">
-              <label className="text-gray-600 font-semibold">Variants</label>
-              <Button
-                type="button"
-                onClick={addVariant}
-                className="mt-2 mb-4"
-                disabled={editingVariantIndex !== null}
-              >
-                Add Variant
-              </Button>
-            </div>
-            {formErrors.variant && (
-              <p className="text-sm text-red-600 mt-1">{formErrors.variant}</p>
-            )}
-            <div className="space-y-4">
-              {(formData.variants || []).map((variant, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "border p-4 rounded-lg space-y-4",
-                    isEditing(index)
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200"
-                  )}
+                <span>{category}</span>
+                <button
+                  type="button"
+                  onClick={() => removeCategory(category)}
+                  className="hover:bg-blue-100 rounded-full p-1 transition-colors"
                 >
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-gray-600 font-semibold">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Tags */}
+      <div className="border-t-2 border-gray-100 pt-6">
+        <label
+          htmlFor="tags"
+          className="block text-sm font-semibold text-gray-900 mb-2"
+        >
+          Tags
+        </label>
+        <p className="text-xs text-gray-600 mb-3">
+          Add tags to help customers find your product
+        </p>
+        <div className="flex gap-2">
+          <Input
+            id="tags"
+            placeholder="e.g., acne, oily skin, cleanser"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={handleTagKeyDown}
+            className="h-12 border-2 border-gray-200 rounded-lg focus-visible:ring-gray-900"
+          />
+          <Button
+            type="button"
+            onClick={addTag}
+            className="h-12 px-6 bg-gray-900 hover:bg-black rounded-lg"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add
+          </Button>
+        </div>
+        {formData.tags && formData.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {formData.tags.map((tag, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-lg text-sm font-medium border border-green-200"
+              >
+                <span>{tag}</span>
+                <button
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  className="hover:bg-green-100 rounded-full p-1 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Variants */}
+      <div className="border-t-2 border-gray-100 pt-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-1">
+              Product Variants
+            </label>
+            <p className="text-xs text-gray-600">
+              Add different sizes and pricing options
+            </p>
+          </div>
+          <Button
+            type="button"
+            onClick={addVariant}
+            className="h-10 px-6 bg-gray-900 hover:bg-black rounded-lg"
+            disabled={editingVariantIndex !== null}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Variant
+          </Button>
+        </div>
+
+        {(formData.variants || []).length === 0 ? (
+          <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
+            <Package className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+            <p className="text-sm text-gray-600 mb-4">No variants added yet</p>
+            <Button
+              type="button"
+              onClick={addVariant}
+              variant="outline"
+              className="border-2 border-gray-200 hover:border-gray-900"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Your First Variant
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {(formData.variants || []).map((variant, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "border-2 rounded-lg transition-all",
+                  isEditing(index)
+                    ? "border-blue-500 bg-blue-50/50 shadow-sm"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                )}
+              >
+                <div className="p-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h4 className="text-sm font-bold text-gray-900">
                       Variant {index + 1}
                       {isEditing(index) && (
-                        <span className="text-xs text-blue-600 ml-2">
-                          (Editing)
+                        <span className="text-xs text-blue-600 font-normal ml-2">
+                          • Editing
                         </span>
                       )}
                     </h4>
@@ -452,7 +526,7 @@ function ProductBasicDetails({
                             type="button"
                             size="sm"
                             onClick={() => saveVariant(index)}
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 h-9"
                           >
                             <Save className="h-4 w-4 mr-1" />
                             Save
@@ -462,6 +536,7 @@ function ProductBasicDetails({
                             variant="outline"
                             size="sm"
                             onClick={() => cancelEditVariant(index)}
+                            className="h-9 border-2"
                           >
                             Cancel
                           </Button>
@@ -474,15 +549,17 @@ function ProductBasicDetails({
                             size="sm"
                             onClick={() => startEditVariant(index)}
                             disabled={editingVariantIndex !== null}
+                            className="h-9 border-2 border-gray-200 hover:border-gray-900"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             type="button"
-                            variant="destructive"
+                            variant="outline"
                             size="sm"
                             onClick={() => removeVariant(index)}
                             disabled={editingVariantIndex !== null}
+                            className="h-9 border-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
                           >
                             <Trash className="h-4 w-4" />
                           </Button>
@@ -492,192 +569,139 @@ function ProductBasicDetails({
                   </div>
 
                   {isEditing(index) ? (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div>
-                        <label
-                          htmlFor={`size-${index}`}
-                          className="text-gray-600 font-semibold"
-                        >
+                        <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                           Size <span className="text-red-600">*</span>
                         </label>
                         <Input
-                          id={`size-${index}`}
                           required
-                          placeholder="Enter size (e.g., 100g)"
+                          placeholder="e.g., 100ml"
                           value={tempVariant?.size ?? ""}
                           onChange={(e) =>
                             updateTempVariant({ size: e.target.value })
                           }
                           className={cn(
-                            "h-12 border-gray-200 rounded-lg focus-visible:ring-gray-900",
-                            getVariantError(index, "size") &&
-                              "border-red-600 focus-visible:ring-red-600"
+                            "h-10 border-2 border-gray-200 rounded-lg",
+                            getVariantError(index, "size") && "border-red-600"
                           )}
                         />
-                        {getVariantError(index, "size") && (
-                          <p className="text-sm text-red-600 mt-1">
-                            {getVariantError(index, "size")}
-                          </p>
-                        )}
                       </div>
                       <div>
-                        <label
-                          htmlFor={`price-${index}`}
-                          className="text-gray-600 font-semibold"
-                        >
-                          Price <span className="text-red-600">*</span>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                          Price (₹) <span className="text-red-600">*</span>
                         </label>
                         <Input
-                          id={`price-${index}`}
                           required
                           type="number"
-                          placeholder="Enter product variant price"
+                          placeholder="249"
                           value={tempVariant?.price ?? ""}
-                          min={0}
+                          min="0"
                           step="0.01"
                           onChange={(e) =>
-                            updateTempVariant({
-                              price:
-                                e.target.value === ""
-                                  ? 0
-                                  : Number(e.target.value),
-                            })
+                            updateTempVariant({ price: e.target.value })
                           }
                           className={cn(
-                            "h-12 border-gray-200 rounded-lg focus-visible:ring-gray-900",
-                            getVariantError(index, "price") &&
-                              "border-red-600 focus-visible:ring-red-600"
+                            "h-10 border-2 border-gray-200 rounded-lg",
+                            getVariantError(index, "price") && "border-red-600"
                           )}
-                        />{" "}
-                        {getVariantError(index, "price") && (
-                          <p className="text-sm text-red-600 mt-1">
-                            {getVariantError(index, "price")}
-                          </p>
-                        )}
+                        />
                       </div>
                       <div>
-                        <label
-                          htmlFor={`stock-${index}`}
-                          className="text-gray-600 font-semibold"
-                        >
+                        <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                           Stock <span className="text-red-600">*</span>
                         </label>
                         <Input
-                          id={`stock-${index}`}
                           required
                           type="number"
-                          placeholder="Enter stock"
+                          placeholder="100"
                           value={tempVariant?.stock ?? ""}
-                          min={0}
+                          min="0"
                           onChange={(e) =>
-                            updateTempVariant({ stock: Number(e.target.value) })
+                            updateTempVariant({ stock: e.target.value })
                           }
                           className={cn(
-                            "h-12 border-gray-200 rounded-lg focus-visible:ring-gray-900",
-                            getVariantError(index, "stock") &&
-                              "border-red-600 focus-visible:ring-red-600"
+                            "h-10 border-2 border-gray-200 rounded-lg",
+                            getVariantError(index, "stock") && "border-red-600"
                           )}
                         />
-                        {getVariantError(index, "stock") && (
-                          <p className="text-sm text-red-600 mt-1">
-                            {getVariantError(index, "stock")}
-                          </p>
-                        )}
                       </div>
                       <div>
-                        <label
-                          htmlFor={`discount-${index}`}
-                          className="text-gray-600 font-semibold"
-                        >
-                          Discount
+                        <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                          Discount (%)
                         </label>
                         <Input
-                          id={`discount-${index}`}
                           type="number"
-                          placeholder="Enter discount (optional)"
+                          placeholder="0"
                           value={tempVariant?.discount ?? ""}
-                          min={0}
-                          step="0.01"
+                          min="0"
+                          max="100"
                           onChange={(e) =>
-                            updateTempVariant({
-                              discount: e.target.value
-                                ? Number(e.target.value)
-                                : null,
-                            })
+                            updateTempVariant({ discount: e.target.value })
                           }
-                          className={cn(
-                            "h-12 border-gray-200 rounded-lg focus-visible:ring-gray-900",
-                            getVariantError(index, "discount") &&
-                              "border-red-600 focus-visible:ring-red-600"
-                          )}
+                          className="h-10 border-2 border-gray-200 rounded-lg"
                         />
-                        {getVariantError(index, "discount") && (
-                          <p className="text-sm text-red-600 mt-1">
-                            {getVariantError(index, "discount")}
-                          </p>
-                        )}
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-3 rounded-lg">
                       <div>
-                        <p className="text-xs text-gray-500">Size</p>
-                        <p className="text-sm font-medium">
+                        <p className="text-xs text-gray-500 mb-1">Size</p>
+                        <p className="text-sm font-semibold text-gray-900">
                           {variant.size || "N/A"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Price</p>
-                        <p className="text-sm font-medium">
-                          ₹{variant.price?.toFixed(2) || "0.00"}
+                        <p className="text-xs text-gray-500 mb-1">Price</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          ₹{Number(variant.price)?.toFixed(2) || "0.00"}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Stock</p>
-                        <p className="text-sm font-medium">
+                        <p className="text-xs text-gray-500 mb-1">Stock</p>
+                        <p className="text-sm font-semibold text-gray-900">
                           {variant.stock ?? 0}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Discount</p>
-                        <p className="text-sm font-medium">
-                          {variant.discount
-                            ? `₹${variant.discount.toFixed(2)}`
-                            : "None"}
+                        <p className="text-xs text-gray-500 mb-1">Discount</p>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {variant.discount ? `${variant.discount}%` : "None"}
                         </p>
                       </div>
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
+        )}
+      </div>
 
-          <div>
-            <label htmlFor="isFeatured" className="text-gray-600 font-semibold">
-              Featured
+      {/* Featured Checkbox */}
+      <div className="border-t-2 border-gray-100 pt-6">
+        <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+          <Checkbox
+            id="isFeatured"
+            checked={formData.isFeatured}
+            onCheckedChange={(checked) =>
+              setFormData({
+                ...formData,
+                isFeatured: !!checked,
+              })
+            }
+            className="mt-0.5 border-2 border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+          />
+          <div className="flex-1">
+            <label
+              htmlFor="isFeatured"
+              className="block text-sm font-semibold text-gray-900 cursor-pointer"
+            >
+              Featured Product
             </label>
-            <div className="flex items-center space-x-2 mt-1">
-              <Checkbox
-                id="isFeatured"
-                checked={formData.isFeatured}
-                onCheckedChange={(checked) =>
-                  setFormData({
-                    ...formData,
-                    isFeatured: !!checked,
-                  })
-                }
-                className="border-gray-200 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
-              />
-              <span className="text-sm text-gray-600">
-                Mark this product as featured
-              </span>
-            </div>
-            {formErrors.isFeatured && (
-              <p className="text-sm text-red-600 mt-1">
-                {formErrors.isFeatured}
-              </p>
-            )}
+            <p className="text-xs text-gray-600 mt-1">
+              Mark this product as featured to display it on the homepage
+            </p>
           </div>
         </div>
       </div>
