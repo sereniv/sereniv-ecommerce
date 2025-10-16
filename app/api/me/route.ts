@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateAccessToken, generateRefreshToken, getUserById, verifyAccessToken, verifyRefreshToken } from '@/lib/auth';
-import { User } from '@/lib/types/user';
+import { User } from '@/lib/types';
 
 export async function GET(request: NextRequest) {
   try {

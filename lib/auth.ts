@@ -76,7 +76,10 @@ export async function authenticateUser(email: string, password: string): Promise
       return null;
     }
 
-    return user;
+    return {
+      ...user,
+      role: user.role === "ADMIN" ? UserRole.ADMIN : UserRole.USER
+    };
   } catch (error) {
     console.error('Authentication error:', error);
     return null;
@@ -102,11 +105,14 @@ export async function createUser(firstName: string, lastName: string, email: str
         lastName,
         email,
         password: hashedPassword,
-        role : role ==="ADMIN" ? UserRole.ADMIN : UserRole.USER,
+        role: role === "ADMIN" ? UserRole.ADMIN : UserRole.USER,
       },
     });
 
-    return newUser;
+    return {
+      ...newUser,
+      role: role === "ADMIN" ? UserRole.ADMIN : UserRole.USER,
+    };
   } catch (error) {
     console.error('Error creating user:', error);
     return null;
@@ -115,9 +121,18 @@ export async function createUser(firstName: string, lastName: string, email: str
 
 export async function getUserById(userId: string): Promise<User | null> {
   try {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
     });
+
+    if (!user) {
+      return null;
+    }
+    return {
+      ...user,
+      role: user.role === "ADMIN" ? UserRole.ADMIN : UserRole.USER,
+
+    }
   } catch (error) {
     console.error('Error fetching user:', error);
     return null;

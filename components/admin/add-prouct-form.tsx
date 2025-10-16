@@ -25,7 +25,7 @@ interface FormStep {
 export default function AddProductForm() {
   const { toast } = useToast();
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState<Partial<Product>>({
+  const [formData, setFormData] = useState<Product>({
     name: "",
     slug: "",
     title: "",
@@ -41,6 +41,7 @@ export default function AddProductForm() {
     faqs: [] as Faq[],
     frequentlyBoughtProducts: [],
     relatedProducts: [],
+    carts: [] as Cart[],
   });
 
   const router = useRouter();

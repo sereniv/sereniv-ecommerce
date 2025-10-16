@@ -85,8 +85,8 @@ export default function ProductPage() {
     product.variants.find((v) => v.size === selectedSize) ||
     product.variants[0];
   const finalPrice =
-    selectedVariant.price -
-    (selectedVariant.price * (selectedVariant?.discount || 0)) / 100;
+    Number(selectedVariant.price) -
+    (Number(selectedVariant.price) * (Number(selectedVariant?.discount) || 0)) / 100;
 
   return (
     <div className="bg-white min-h-screen">
@@ -225,7 +225,7 @@ export default function ProductPage() {
                 ))}
               </div>
               <p className="text-sm text-gray-500">
-                {selectedVariant.stock > 0
+                {Number(selectedVariant.stock) > 0
                   ? `${selectedVariant.stock} in stock`
                   : "Out of stock"}
               </p>
@@ -246,7 +246,7 @@ export default function ProductPage() {
                 <span className="w-12 text-center font-medium">{quantity}</span>
                 <button
                   onClick={() =>
-                    setQuantity(Math.min(selectedVariant.stock, quantity + 1))
+                    setQuantity(Math.min(Number(selectedVariant.stock), quantity + 1))
                   }
                   className="w-10 h-10 rounded-lg border-2 border-gray-200 hover:border-gray-400 transition"
                 >

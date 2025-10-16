@@ -12,7 +12,7 @@ export interface User {
   isVerified: boolean;
   isActive: boolean;
   role: UserRole;
-  carts: Cart[];
+  carts?: Cart[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -74,11 +74,11 @@ export interface Faq {
 
 export interface Cart {
   id?: string;
-  user: User;
-  userId: string;
-  product: Product;
-  productId: string;
-  quantity: number;
+  user?: User;
+  userId?: string;
+  product?: Product;
+  productId?: string;
+  quantity?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
