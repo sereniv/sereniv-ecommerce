@@ -68,14 +68,14 @@ export default function Home() {
                   products.length > 0 &&
                   products.slice(0, 3).map((product) => {
                     const minPrice = Math.min(
-                      ...product.variants.map((v) => v.price)
+                      ...product.variants.map((v) => Number(v.price))
                     );
                     const hasDiscount = product.variants.some(
-                      (v) => v.discount && v.discount > 0
+                      (v) => v.discount && Number(v.discount) > 0
                     );
                     const maxDiscount = Math.max(
                       ...product.variants
-                        .map((v) => v.discount)
+                        .map((v) => Number(v.discount))
                         .filter(
                           (discount) =>
                             discount !== null && discount !== undefined
