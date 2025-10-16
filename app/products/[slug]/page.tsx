@@ -5,18 +5,17 @@ import { useEffect, useState } from "react";
 import { Product } from "@/lib/types";
 import { FormShimmer } from "@/components/ui/shimmer";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Star, CheckCircle } from "lucide-react";
+import { Star, CheckCircle, ShoppingCart, Heart } from "lucide-react";
 import Image from "next/image";
 
 export default function ProductPage() {
@@ -32,6 +31,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -53,7 +53,6 @@ export default function ProductPage() {
 
         const responseData = await response.json();
         setProduct(responseData);
-        // Set default selected size to the first variant's size
         if (responseData.variants && responseData.variants.length > 0) {
           setSelectedSize(responseData.variants[0].size);
         }
@@ -83,201 +82,276 @@ export default function ProductPage() {
     );
   }
 
+  const selectedVariant =
+    product.variants.find((v) => v.size === selectedSize) ||
+    product.variants[0];
+  const finalPrice =
+    selectedVariant.price -
+    (selectedVariant.price * (selectedVariant?.discount || 0)) / 100;
+
   return (
-    <div className="container px-4 py-6 mx-auto max-w-7xl space-y-8">
-      {/* Hero Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        <div className="space-y-4">
-          <Image
-            src={product.thumbnail || "/placeholder-product.jpg"}
-            alt={product.name}
-            width={400}
-            height={500}
-            className="w-full h-auto rounded-lg"
-          />
-        </div>
-        <div className="space-y-4">
-          {product.tags && product.tags.length > 0 && (
-            <div className="flex items-center gap-2">
-              {product.tags.map((tag, index) => (
-                <Badge key={index} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-          <h1 className="text-3xl font-bold">{product.name}</h1>
-          {product.title && (
-            <p className="text-xl text-muted-foreground">{product.title}</p>
-          )}
-          <div className="flex items-center gap-1">
-            <Star className="h-5 w-5 fill-current text-yellow-400" />
-            <Star className="h-5 w-5 fill-current text-yellow-400" />
-            <Star className="h-5 w-5 fill-current text-yellow-400" />
-            <Star className="h-5 w-5 fill-current text-yellow-400" />
-            <Star className="h-5 w-5 fill-current text-yellow-400" />
-            <span className="ml-2 text-sm text-muted-foreground">(127)</span>
-          </div>
-          <p className="text-2xl font-semibold">
-            ₹{product.variants.find((v) => v.size === selectedSize)?.price ||
-              product.variants[0].price}
-          </p>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Size</label>
-            <div className="flex gap-2">
-              {product.variants.map((variant) => (
-                <Button
-                  key={variant.size}
-                  variant={selectedSize === variant.size ? "default" : "outline"}
-                  onClick={() => setSelectedSize(variant.size)}
-                >
-                  {variant.size}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <Button size="lg" className="w-full">
-            Add to Cart
-          </Button>
-          <div className="p-4 bg-muted rounded-lg">
-            <p className="italic text-sm">
-              "I have seen a reduction in acne and oiliness ever since I started
-              using this product" - Nikhil V.
-            </p>
-          </div>
+    <div className="bg-white min-h-screen">
+      {/* Breadcrumb */}
+      <div className="container mx-auto max-w-7xl px-4 py-4">
+        <div className="text-sm text-gray-500">
+          Home / Products / {product.name}
         </div>
       </div>
 
-      <Separator />
+      {/* Main Product Section */}
+      <div className="container mx-auto max-w-7xl px-4 pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Product Image */}
+          <div className="space-y-4">
+            <div className="relative aspect-square bg-gray-50 rounded-lg overflow-hidden">
+              <Image
+                src={product.thumbnail || "/placeholder-product.jpg"}
+                alt={product.name}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+            {product.images && product.images.length > 0 && (
+              <div className="grid grid-cols-4 gap-2">
+                {product.images.map((img, index) => (
+                  <div
+                    key={index}
+                    className="aspect-square bg-gray-50 rounded-lg overflow-hidden cursor-pointer hover:opacity-75 transition"
+                  >
+                    <Image
+                      src={img}
+                      alt={`${product.name} ${index + 1}`}
+                      width={100}
+                      height={100}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Product Details */}
+          <div className="space-y-6">
+            {/* Tags */}
+            {product.tags && product.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {product.tags.map((tag, index) => (
+                  <Badge
+                    key={index}
+                    variant="outline"
+                    className="rounded-full px-3 py-1 text-xs"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Product Name */}
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+                {product.name}
+              </h1>
+              {product.title && (
+                <p className="text-lg text-gray-600">{product.title}</p>
+              )}
+            </div>
+
+            {/* Rating */}
+            {/* <div className="flex items-center gap-2">
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-gray-600">(127 reviews)</span>
+            </div> */}
+
+            {/* Price */}
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-bold text-gray-900">
+                ₹{Math.round(finalPrice)}
+              </span>
+              {selectedVariant?.discount && selectedVariant?.discount > 0 && (
+                <>
+                  <span className="text-xl text-gray-400 line-through">
+                    ₹{selectedVariant.price}
+                  </span>
+                  <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                    {selectedVariant.discount}% OFF
+                  </Badge>
+                </>
+              )}
+            </div>
+
+            {/* Categories */}
+            {product.categories && product.categories.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {product.categories.map((category, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
+                  >
+                    {category}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <Separator />
+
+            {/* Size Selection */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-900">
+                Size
+              </label>
+              <div className="flex gap-3">
+                {product.variants.map((variant) => (
+                  <button
+                    key={variant.size}
+                    className={`px-6 py-3 rounded-lg border-2 transition-all font-medium ${
+                      selectedSize === variant.size
+                        ? "border-gray-900 bg-gray-900 text-white"
+                        : "border-gray-200 bg-white text-gray-900 hover:border-gray-400"
+                    }`}
+                    onClick={() => setSelectedSize(variant.size)}
+                  >
+                    {variant.size}
+                  </button>
+                ))}
+              </div>
+              <p className="text-sm text-gray-500">
+                {selectedVariant.stock > 0
+                  ? `${selectedVariant.stock} in stock`
+                  : "Out of stock"}
+              </p>
+            </div>
+
+            {/* Quantity */}
+            <div className="space-y-3">
+              <label className="block text-sm font-semibold text-gray-900">
+                Quantity
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-10 h-10 rounded-lg border-2 border-gray-200 hover:border-gray-400 transition"
+                >
+                  -
+                </button>
+                <span className="w-12 text-center font-medium">{quantity}</span>
+                <button
+                  onClick={() =>
+                    setQuantity(Math.min(selectedVariant.stock, quantity + 1))
+                  }
+                  className="w-10 h-10 rounded-lg border-2 border-gray-200 hover:border-gray-400 transition"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Add to Cart */}
+            <div className="flex gap-3">
+              <Button
+                className="flex-1 h-12 bg-gray-900 hover:bg-black text-white rounded-lg font-medium text-base"
+                disabled={selectedVariant.stock === 0}
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" />
+                Add to Cart
+              </Button>
+              <Button
+                variant="outline"
+                className="h-12 w-12 rounded-lg border-2 border-gray-200 hover:border-gray-900"
+              >
+                <Heart className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Description Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Description</h2>
-          <p className="text-muted-foreground mb-6">{product.description}</p>
-
-          <h3 className="text-xl font-semibold mb-3">What Makes It Potent?</h3>
-          <ul className="space-y-2 mb-6">
-            {product.ingredients.map((ingredient, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span>{ingredient.description}</span>
-              </li>
-            ))}
-          </ul>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Ideal For</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Skin type: Oily/Combination, Acne-Prone
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Concerns: Acne, Breakouts & Oiliness
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Suitable for: 15+ years
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">How to Use</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm">
-                  Apply on wet face. Pour an appropriate quantity into wet hands,
-                  rub together into a light lather, and massage into face. Rinse
-                  thoroughly.
-                </p>
-                <p className="text-sm font-medium mt-2">
-                  When to use: AM & PM. Everyday.
-                </p>
-              </CardContent>
-            </Card>
+      {product.description && (
+        <div className="py-12">
+          <div className="container mx-auto max-w-7xl px-4">
+            <div className="max-w-4xl">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                About this product
+              </h2>
+              <div
+                className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: product?.description }}
+              />
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Consumer Studies */}
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Consumer Studies</h2>
-          <div className="space-y-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm">
-                    Significant reduction in skin oiliness after 6 washes
-                  </p>
-                  <Badge variant="secondary">90%</Badge>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm">
-                    Acne occurrences reduced after 6 weeks
-                  </p>
-                  <Badge variant="secondary">87%</Badge>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm">
-                    Skin felt smoother & brighter after 4 weeks
-                  </p>
-                  <Badge variant="secondary">90%</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Ingredients Section */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">Ingredients</h2>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Key Ingredients */}
+      {product.ingredients && product.ingredients.length > 0 && (
+        <div className="py-12">
+          <div className="container mx-auto max-w-7xl px-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Key Ingredients
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {product.ingredients.map((ingredient, index) => (
-                <div key={index} className="space-y-1">
-                  <p className="font-medium">{ingredient.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {ingredient.description}
-                  </p>
-                </div>
+                <Card
+                  key={ingredient.id}
+                  className="border-2 hover:border-gray-300 transition"
+                >
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-1">
+                          {ingredient.name}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {ingredient.description}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-            <Separator className="my-4" />
-            <p className="text-xs font-mono break-words">
-              {product.ingredients.map((i) => i.name).join(", ")}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
+      )}
 
-      <Separator />
-
-      {/* FAQs Section */}
-      <div>
-        <h2 className="text-2xl font-bold mb-4">FAQs</h2>
-        <Accordion type="single" collapsible className="w-full">
-          {product.faqs?.map((faq, index) => (
-            <AccordionItem key={index} value={`item-${index + 1}`}>
-              <AccordionTrigger>{faq.question}</AccordionTrigger>
-              <AccordionContent>{faq.answer}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </div>
+      {/* FAQs */}
+      {product.faqs && product.faqs.length > 0 && (
+        <div className="py-12">
+          <div className="container mx-auto max-w-7xl px-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Frequently Asked Questions
+            </h2>
+            <Accordion type="single" collapsible className="w-full space-y-4">
+              {product.faqs.map((faq, index) => (
+                <AccordionItem
+                  key={faq.id}
+                  value={`item-${index}`}
+                  className="bg-white border rounded-lg px-6"
+                >
+                  <AccordionTrigger className="text-left font-semibold text-gray-900 hover:no-underline">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-gray-600 pb-4">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
