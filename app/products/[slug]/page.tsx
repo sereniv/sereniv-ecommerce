@@ -17,13 +17,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Star, CheckCircle, ShoppingCart, Heart } from "lucide-react";
 import Image from "next/image";
+import Shimmer from "./shimmer";
 
 export default function ProductPage() {
   const params = useParams();
   const { toast } = useToast();
 
   if (!params || !params.slug) {
-    return <FormShimmer />;
+    return <Shimmer />;
   }
 
   const slug = params.slug as string;
@@ -76,9 +77,7 @@ export default function ProductPage() {
 
   if (loading || !product) {
     return (
-      <div className="container px-4 py-6 mx-auto max-w-7xl">
-        <FormShimmer />
-      </div>
+      <Shimmer/>
     );
   }
 
@@ -177,7 +176,7 @@ export default function ProductPage() {
               <span className="text-3xl font-bold text-gray-900">
                 ₹{Math.round(finalPrice)}
               </span>
-              {selectedVariant?.discount && selectedVariant?.discount > 0 && (
+              {/* {selectedVariant?.discount && selectedVariant.discount > 0 && (
                 <>
                   <span className="text-xl text-gray-400 line-through">
                     ₹{selectedVariant.price}
@@ -186,7 +185,7 @@ export default function ProductPage() {
                     {selectedVariant.discount}% OFF
                   </Badge>
                 </>
-              )}
+              )} */}
             </div>
 
             {/* Categories */}
