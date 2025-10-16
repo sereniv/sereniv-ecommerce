@@ -10,45 +10,8 @@ const Footer = () => {
     <footer className="bg-gray-50 border-t border-gray-200">
       <Container>
         <div className="py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Column 1: Shop */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Shop</h3>
-              <ul className="space-y-3">
-                <li>
-                  <Link
-                    href="/shop/all"
-                    className="text-gray-600 hover:text-gray-900 transition-colors"
-                  >
-                    All Products
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/shop/serums"
-                    className="text-gray-600 hover:text-gray-900 transition-colors"
-                  >
-                    Serums
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/shop/moisturizers"
-                    className="text-gray-600 hover:text-gray-900 transition-colors"
-                  >
-                    Moisturizers
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/shop/cleansers"
-                    className="text-gray-600 hover:text-gray-900 transition-colors"
-                  >
-                    Cleansers
-                  </Link>
-                </li>
-              </ul>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
 
             {/* Column 2: About */}
             <div>
